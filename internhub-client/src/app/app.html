@@ -1,0 +1,398 @@
+<main class="login-screen" *ngIf="!user(); else appShell">
+  <section class="login-card">
+    <div class="brand big"><span class="brand-mark">IH</span><div><strong>InternHub</strong><small>Operational onboarding platform</small></div></div>
+    <form *ngIf="!showRegister()" [formGroup]="loginForm" (ngSubmit)="login()">
+      <label>Email<input type="email" formControlName="email"></label>
+      <label>Password<input type="password" formControlName="password"></label>
+      <button type="submit" [disabled]="loginForm.invalid">Sign in</button>
+    </form>
+    <form *ngIf="showRegister()" [formGroup]="registerForm" (ngSubmit)="register()">
+      <label>Full name<input formControlName="fullName"></label>
+      <label>Email<input type="email" formControlName="email"></label>
+      <label>Password<input type="password" formControlName="password"></label>
+      <button type="submit" [disabled]="registerForm.invalid">Create intern account</button>
+    </form>
+    <button class="ghost" type="button" (click)="showRegister.set(!showRegister())">{{ showRegister() ? 'Back to sign in' : 'Register as intern' }}</button>
+    <p class="hint">Demo admin: admin@internhub.test / Admin123!</p>
+    <p class="message" *ngIf="message()">{{ message() }}</p>
+  </section>
+</main>
+
+<ng-template #appShell>
+  <main class="shell">
+    <app-sidebar
+      [activeTab]="activeTab()"
+      [role]="user()?.role || 'User'"
+      [canWrite]="canWrite()"
+      [canAdmin]="canAdmin()"
+      [loading]="loading()"
+      (navigate)="setTab($event)"
+      (refresh)="loadAll()"
+      (openAi)="chatOpen.set(true)"
+      (openTeam)="teamChatOpen.set(true)"
+      (logout)="logout()">
+    </app-sidebar>
+
+    <section class="content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">SQL Server + .NET auth + Angular workflows</p>
+          <h1>Intern onboarding operations</h1>
+        </div>
+        <span class="status" [class.warn]="message()">{{ message() || (loading() ? 'Syncing...' : 'Connected') }}</span>
+      </header>
+      <form class="global-search" [formGroup]="searchForm" (ngSubmit)="globalSearch()">
+        <input formControlName="q" placeholder="Search employees, tasks, assets">
+        <button type="submit">Search</button>
+      </form>
+      <section class="search-results" *ngIf="searchResults().length">
+        <button class="ghost" type="button" *ngFor="let result of searchResults()" (click)="openSearchResult(result)">{{ result.type }} - {{ result.title }} <small>{{ result.subtitle }}</small></button>
+      </section>
+      <app-empty-state *ngIf="loading()" title="Syncing workspace" detail="Loading the latest people, tasks, reports, and messages from the API."></app-empty-state>
+
+      <section class="ops-command" *ngIf="dashboard() as d">
+        <div class="ops-copy">
+          <span class="workspace-chip">{{ user()?.role }} workspace</span>
+          <h2>Today's onboarding signal</h2>
+          <div class="signal-line">
+            <span>{{ d.openTasks }} open tasks</span>
+            <span>{{ d.overdueTasks }} overdue</span>
+            <span>{{ blockedTasks().length }} blocked</span>
+            <span>{{ criticalOpenTasks().length }} critical</span>
+          </div>
+        </div>
+        <div class="ops-focus">
+          <article>
+            <small>Next due</small>
+            <strong>{{ dueSoonTasks()[0]?.title || 'No open tasks' }}</strong>
+            <span>{{ dueSoonTasks()[0]?.employeeName || 'All clear' }}</span>
+          </article>
+          <article>
+            <small>At risk</small>
+            <strong>{{ atRiskEmployees()[0]?.fullName || 'No one flagged' }}</strong>
+            <span>{{ atRiskEmployees()[0]?.late || 0 }} late tasks</span>
+          </article>
+          <article>
+            <small>Asset watch</small>
+            <strong>{{ assetSummary().needsRepair }}</strong>
+            <span>needs repair</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="action-queue">
+        <div class="panel-title"><h2>Action queue</h2><span>{{ actionQueue().length }} recommended</span></div>
+        <div class="action-grid" *ngIf="actionQueue().length; else noActions">
+          <button type="button" class="action-card" *ngFor="let item of actionQueue()" [class]="item.tone" (click)="openAction(item)">
+            <small>{{ item.type }}</small>
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.detail }}</span>
+            <b>{{ item.action }}</b>
+          </button>
+        </div>
+        <ng-template #noActions>
+          <app-empty-state title="No urgent actions" detail="The workspace has no blocked, overdue, or critical work right now."></app-empty-state>
+        </ng-template>
+      </section>
+
+      <section class="metrics" *ngIf="dashboard() as d">
+        <article><small>Employees</small><strong>{{ d.employees }}</strong></article>
+        <article><small>Open tasks</small><strong>{{ d.openTasks }}</strong></article>
+        <article><small>Overdue</small><strong>{{ d.overdueTasks }}</strong></article>
+        <article><small>Completion</small><strong>{{ d.completionRate }}%</strong></article>
+        <article><small>Assets</small><strong>{{ d.assets }}</strong></article>
+        <article><small>Asset value</small><strong>{{ d.assetValue | currency }}</strong></article>
+      </section>
+
+      <section class="dashboard-grid" *ngIf="dashboard() as d">
+        <div class="panel">
+          <div class="panel-title"><h2>Department load</h2><span>{{ d.employees }} total</span></div>
+          <div class="bars"><div class="bar" *ngFor="let row of d.departmentLoad"><span>{{ row.department }}</span><div><i [style.width.%]="(row.employees / maxDepartmentCount()) * 100"></i></div><b>{{ row.employees }}</b></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><h2>Upcoming starts</h2><span>{{ d.upcomingStarts.length }} scheduled</span></div>
+          <ul class="task-list"><li *ngFor="let start of d.upcomingStarts"><span>{{ start.employeeName }}</span><small>{{ start.department }} - {{ start.startDate }}</small></li></ul>
+        </div>
+      </section>
+
+      <section class="workspace" [ngSwitch]="activeTab()">
+        <div class="editor" *ngIf="activeTab() !== 'home' && activeTab() !== 'mywork' && activeTab() !== 'calendar' && activeTab() !== 'templates' && activeTab() !== 'wizard' && activeTab() !== 'invites' && activeTab() !== 'reports' && activeTab() !== 'accounts' && activeTab() !== 'settings' && activeTab() !== 'audit'">
+          <h2>{{ editingId() ? 'Edit' : 'Create' }} {{ activeTab().slice(0, -1) }}</h2>
+
+          <form *ngSwitchCase="'employees'" [formGroup]="employeeForm" (ngSubmit)="saveEmployee()">
+            <div class="split"><label>First name<input formControlName="firstName"></label><label>Last name<input formControlName="lastName"></label></div>
+            <label>Email<input type="email" formControlName="email"></label>
+            <label>Role<input formControlName="role"></label>
+            <div class="split"><label>Start date<input type="date" formControlName="startDate"></label><label>End date<input type="date" formControlName="endDate"></label></div>
+            <label>Status<select formControlName="status"><option *ngFor="let s of employeeStatuses" [value]="s">{{ s }}</option></select></label>
+            <label>Department<select formControlName="departmentId"><option [ngValue]="0">Select department</option><option *ngFor="let d of departments()" [ngValue]="d.id">{{ d.name }}</option></select></label>
+            <div class="actions"><button type="submit" [disabled]="employeeForm.invalid || !canWrite()">Save</button><button type="button" class="ghost" (click)="cancelEdit()">Clear</button></div>
+          </form>
+
+          <form *ngSwitchCase="'departments'" [formGroup]="departmentForm" (ngSubmit)="saveDepartment()">
+            <label>Name<input formControlName="name"></label>
+            <div class="split"><label>Code<input formControlName="code"></label><label>Budget<input type="number" formControlName="budget"></label></div>
+            <label>Lead<input formControlName="leadName"></label>
+            <label>Description<textarea rows="4" formControlName="description"></textarea></label>
+            <div class="actions"><button type="submit" [disabled]="departmentForm.invalid || !canAdmin()">Save</button><button type="button" class="ghost" (click)="cancelEdit()">Clear</button></div>
+          </form>
+
+          <form *ngSwitchCase="'tasks'" [formGroup]="taskForm" (ngSubmit)="saveTask()">
+            <label>Title<input formControlName="title"></label>
+            <label>Employee<select formControlName="employeeId"><option [ngValue]="0">Select employee</option><option *ngFor="let e of employees()" [ngValue]="e.id">{{ e.fullName }}</option></select></label>
+            <div class="split"><label>Due date<input type="date" formControlName="dueDate"></label><label>Priority<select formControlName="priority"><option *ngFor="let p of taskPriorities" [value]="p">{{ p }}</option></select></label></div>
+            <label>Status<select formControlName="status"><option *ngFor="let s of taskStatuses" [value]="s">{{ s }}</option></select></label>
+            <label>Notes<textarea rows="4" formControlName="notes"></textarea></label>
+            <div class="actions"><button type="submit" [disabled]="taskForm.invalid || !canWrite()">Save</button><button type="button" class="ghost" (click)="cancelEdit()">Clear</button></div>
+          </form>
+
+          <form *ngSwitchCase="'assets'" [formGroup]="assetForm" (ngSubmit)="saveAsset()">
+            <div class="split"><label>Tag<input formControlName="tag"></label><label>Category<input formControlName="category"></label></div>
+            <label>Name<input formControlName="name"></label>
+            <div class="split"><label>Value<input type="number" formControlName="value"></label><label>Assigned date<input type="date" formControlName="assignedDate"></label></div>
+            <div class="split"><label>Return date<input type="date" formControlName="returnDate"></label><label>Status<select formControlName="status"><option *ngFor="let s of assetStatuses" [value]="s">{{ s }}</option></select></label></div>
+            <label>Condition<select formControlName="condition"><option *ngFor="let c of assetConditions" [value]="c">{{ c }}</option></select></label>
+            <label>Assigned to<select formControlName="employeeId"><option [ngValue]="0">Unassigned</option><option *ngFor="let e of employees()" [ngValue]="e.id">{{ e.fullName }}</option></select></label>
+            <div class="actions"><button type="submit" [disabled]="assetForm.invalid || !canWrite()">Save</button><button type="button" class="ghost" (click)="cancelEdit()">Clear</button></div>
+          </form>
+        </div>
+
+        <div class="my-work-grid" *ngSwitchCase="'home'">
+          <section class="panel" *ngIf="roleHome() as home"><div class="panel-title"><h2>{{ home.role }} focus</h2><span>Today</span></div><ul class="task-list"><li *ngFor="let item of home.focusItems"><span>{{ item }}</span></li></ul></section>
+          <section class="panel command-panel"><div class="panel-title"><h2>Command center</h2><span>{{ criticalOpenTasks().length }} need attention</span></div><ul class="task-list priority-list"><li *ngFor="let task of dueSoonTasks()" [class]="taskTone(task)"><span>{{ task.title }}</span><small>{{ task.employeeName }} - {{ dueLabel(task) }} - {{ task.priority }}</small><div class="row-actions"><button (click)="openTaskComments(task)">Notes</button><button (click)="changeTaskStatus(task, 'InProgress')" *ngIf="task.status === 'ToDo'">Start</button><button (click)="changeTaskStatus(task, 'Done')">Done</button></div></li></ul><button *ngIf="canWrite()" (click)="runReminders()">Run overdue reminders</button></section>
+          <section class="journey-map">
+            <div class="panel-title"><h2>Intern journey map</h2><span>Live pipeline</span></div>
+            <div class="journey-rail">
+              <article class="journey-phase" *ngFor="let phase of journeyMap()">
+                <div class="journey-head"><b>{{ phase.title }}</b><small>{{ phase.signal }}</small><strong>{{ phase.employees.length }}</strong></div>
+                <button class="journey-person" type="button" *ngFor="let employee of phase.employees" (click)="openProfile(employee)">
+                  <span>{{ employee.fullName }}</span>
+                  <small>{{ employee.departmentName }} - {{ employee.progress }}% - {{ employee.nextTask?.title || 'No open task' }}</small>
+                  <i [style.width.%]="employee.progress"></i>
+                  <em *ngIf="employee.late">{{ employee.late }} late</em>
+                </button>
+              </article>
+            </div>
+          </section>
+          <section class="panel"><div class="panel-title"><h2>People at risk</h2><span>Progress</span></div><ul class="task-list"><li *ngFor="let employee of atRiskEmployees()"><span>{{ employee.fullName }}</span><small>{{ employee.departmentName }} - {{ employee.openTaskCount }} open - {{ employee.late }} late</small><div class="progress"><i [style.width.%]="employee.progress"></i></div><button (click)="openProfile(employee)">Open profile</button></li></ul></section>
+          <section class="panel"><div class="panel-title"><h2>Notifications</h2><span>{{ myWork()?.notifications?.length || notifications().length }}</span></div><ul class="task-list"><li *ngFor="let n of (myWork()?.notifications || notifications()).slice(0, 5)"><span>{{ n.subject }}</span><small>{{ n.isRead ? 'Read' : 'Unread' }}</small></li></ul></section>
+          <section class="panel"><div class="panel-title"><h2>Asset health</h2><span>{{ assets().length }} total</span></div><ul class="task-list compact-list"><li><span>Assigned</span><strong>{{ assetSummary().assigned }}</strong></li><li><span>Available</span><strong>{{ assetSummary().available }}</strong></li><li><span>Needs repair</span><strong>{{ assetSummary().needsRepair }}</strong></li><li><span>Returned</span><strong>{{ assetSummary().returned }}</strong></li></ul></section>
+        </div>
+
+        <div class="my-work-grid" *ngSwitchCase="'mywork'">
+          <section class="panel" *ngIf="myWork() as work"><div class="panel-title"><h2>{{ work.employee?.fullName || 'No employee profile linked' }}</h2><span>{{ work.employee?.status || user()?.role }}</span></div><ul class="task-list"><li *ngFor="let task of work.tasks"><span>{{ task.title }}</span><small>{{ task.dueDate }} - {{ task.priority }} - {{ task.status }}</small><button (click)="changeTaskStatus(task, 'Done')">Done</button><button (click)="changeTaskStatus(task, 'Blocked')">Blocked</button></li></ul></section>
+          <section class="panel" *ngIf="myWork() as work"><div class="panel-title"><h2>Inbox</h2><span>{{ work.notifications.length }}</span></div><ul class="task-list"><li *ngFor="let n of work.notifications"><span>{{ n.subject }}</span><small>{{ n.isRead ? 'Read' : 'Unread' }} - {{ n.createdAt | date:'short' }}</small><button *ngIf="!n.isRead" (click)="markNotificationRead(n.id)">Mark read</button></li></ul></section>
+          <section class="panel" *ngIf="myWork() as work"><div class="panel-title"><h2>My assets</h2><span>{{ work.assets.length }}</span></div><ul class="task-list"><li *ngFor="let a of work.assets"><span>{{ a.tag }} - {{ a.name }}</span><small>{{ a.status }} - {{ a.condition }}</small></li></ul></section>
+          <section class="panel" *ngIf="myWork() as work"><div class="panel-title"><h2>My documents</h2><span>{{ work.documents.length }}</span></div><ul class="task-list"><li *ngFor="let d of work.documents"><span>{{ d.documentType }} - {{ d.fileName }}</span><small>{{ d.approvalStatus }}</small><button (click)="downloadDocument(d.id)">Download</button></li></ul></section>
+        </div>
+
+        <div class="wizard-shell" *ngSwitchCase="'wizard'">
+          <section class="wizard-panel">
+            <div class="panel-title"><h2>Launch wizard</h2><span>Step {{ wizardStep() }} of 4</span></div>
+            <div class="wizard-steps"><i [class.active]="wizardStep() >= 1"></i><i [class.active]="wizardStep() >= 2"></i><i [class.active]="wizardStep() >= 3"></i><i [class.active]="wizardStep() >= 4"></i></div>
+            <form [formGroup]="launchForm" (ngSubmit)="launchIntern()">
+              <section *ngIf="wizardStep() === 1" class="wizard-step">
+                <h3>Intern identity</h3>
+                <div class="split"><label>First name<input formControlName="firstName"></label><label>Last name<input formControlName="lastName"></label></div>
+                <label>Email<input type="email" formControlName="email"></label>
+                <label>Internship role<input formControlName="role"></label>
+                <div class="split"><label>Start date<input type="date" formControlName="startDate"></label><label>Department<select formControlName="departmentId"><option [ngValue]="0">Select department</option><option *ngFor="let d of departments()" [ngValue]="d.id">{{ d.name }}</option></select></label></div>
+              </section>
+              <section *ngIf="wizardStep() === 2" class="wizard-step">
+                <h3>Plan and invite</h3>
+                <label>Onboarding template<select formControlName="templateId"><option [ngValue]="0">Default active template</option><option *ngFor="let template of templates()" [ngValue]="template.id">{{ template.name }}</option></select></label>
+                <label>Account role<select formControlName="inviteRole"><option *ngFor="let role of accountRoles" [value]="role">{{ role }}</option></select></label>
+                <app-empty-state *ngIf="!templates().length" title="No templates yet" detail="Create a template first, or the API will use its default active template."></app-empty-state>
+              </section>
+              <section *ngIf="wizardStep() === 3" class="wizard-step">
+                <h3>Starter asset</h3>
+                <div class="split"><label>Asset tag<input formControlName="assetTag" placeholder="LPT-2042"></label><label>Category<input formControlName="assetCategory"></label></div>
+                <label>Asset name<input formControlName="assetName" placeholder="Lenovo ThinkPad T14"></label>
+                <label>Value<input type="number" formControlName="assetValue"></label>
+              </section>
+              <section *ngIf="wizardStep() === 4" class="wizard-step launch-preview">
+                <h3>Launch preview</h3>
+                <ul class="task-list compact-list">
+                  <li><span>Name</span><strong>{{ launchForm.getRawValue().firstName }} {{ launchForm.getRawValue().lastName }}</strong></li>
+                  <li><span>Email</span><strong>{{ launchForm.getRawValue().email }}</strong></li>
+                  <li><span>Plan</span><strong>{{ launchForm.getRawValue().templateId ? 'Selected template' : 'Default template' }}</strong></li>
+                  <li><span>Invite</span><strong>{{ launchForm.getRawValue().inviteRole }}</strong></li>
+                  <li><span>Asset</span><strong>{{ launchForm.getRawValue().assetTag || 'Skip asset' }}</strong></li>
+                </ul>
+              </section>
+              <div class="wizard-actions">
+                <button class="ghost" type="button" (click)="previousWizardStep()" [disabled]="wizardStep() === 1 || wizardBusy()">Back</button>
+                <button type="button" *ngIf="wizardStep() < 4" (click)="nextWizardStep()" [disabled]="launchForm.invalid">Continue</button>
+                <button type="submit" *ngIf="wizardStep() === 4" [disabled]="launchForm.invalid || wizardBusy()">{{ wizardBusy() ? 'Launching...' : 'Launch intern' }}</button>
+              </div>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-title"><h2>What this creates</h2><span>Workflow</span></div>
+            <ol class="workflow-list"><li>Creates the employee record.</li><li>Generates the onboarding plan.</li><li>Creates an invite token and notification.</li><li>Optionally assigns a starter asset.</li></ol>
+          </section>
+        </div>
+
+        <div class="table-wrap" *ngSwitchCase="'employees'">
+          <div class="utility-bar" *ngIf="canWrite()"><button (click)="exportAdvancedReport('employees')">Employees CSV</button><button (click)="exportAdvancedReport('progress')">Progress CSV</button></div>
+          <div class="filters"><input placeholder="Search people, roles, departments" [value]="employeeSearch()" (input)="employeeSearch.set($any($event.target).value)"><select [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value)"><option value="">All statuses</option><option *ngFor="let s of employeeStatuses" [value]="s">{{ s }}</option></select></div>
+          <table><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Status</th><th>Tasks</th><th></th></tr></thead>
+            <tbody><tr *ngFor="let e of filteredEmployees()"><td><b>{{ e.fullName }}</b><small>{{ e.email }}</small></td><td>{{ e.role }}</td><td>{{ e.departmentName }}</td><td><span class="pill">{{ e.status }}</span></td><td>{{ e.openTaskCount }}</td><td><button (click)="openProfile(e)">Profile</button><button *ngIf="canWrite()" (click)="changeLifecycle(e.id, 'Active')">Activate</button><button *ngIf="canWrite()" (click)="changeLifecycle(e.id, 'Completed')">Complete</button><button *ngIf="canWrite()" (click)="editEmployee(e)">Edit</button><button *ngIf="canAdmin()" class="danger" (click)="delete('employees', e.id)">Delete</button></td></tr></tbody></table>
+          <app-empty-state *ngIf="!filteredEmployees().length" title="No employees match" detail="Try clearing the filters or launch a new intern from the wizard." actionLabel="Open wizard" (action)="setTab('wizard')"></app-empty-state>
+        </div>
+
+        <div class="table-wrap" *ngSwitchCase="'departments'">
+          <table><thead><tr><th>Department</th><th>Code</th><th>Lead</th><th>Budget</th><th>Employees</th><th></th></tr></thead>
+            <tbody><tr *ngFor="let d of departments()"><td><b>{{ d.name }}</b><small>{{ d.description }}</small></td><td>{{ d.code }}</td><td>{{ d.leadName }}</td><td>{{ d.budget | currency }}</td><td>{{ d.employeeCount }}</td><td><button *ngIf="canAdmin()" (click)="editDepartment(d)">Edit</button><button *ngIf="canAdmin()" class="danger" (click)="delete('departments', d.id)">Delete</button></td></tr></tbody></table>
+        </div>
+
+        <div class="table-wrap" *ngSwitchCase="'tasks'">
+          <div class="utility-bar" *ngIf="canWrite()"><button (click)="exportAdvancedReport('tasks')">Tasks CSV</button></div>
+          <div class="filters"><select [value]="taskStatusFilter()" (change)="taskStatusFilter.set($any($event.target).value)"><option value="">All statuses</option><option *ngFor="let s of taskStatuses" [value]="s">{{ s }}</option></select><select [value]="taskPriorityFilter()" (change)="taskPriorityFilter.set($any($event.target).value)"><option value="">All priorities</option><option *ngFor="let p of taskPriorities" [value]="p">{{ p }}</option></select></div>
+          <div class="task-board">
+            <section class="task-column" *ngFor="let status of taskStatuses">
+              <div class="panel-title"><h2>{{ status }}</h2><span>{{ tasksForStatus(status).length }}</span></div>
+              <article class="task-card" *ngFor="let t of tasksForStatus(status)" [class]="taskTone(t)">
+                <b>{{ t.title }}</b>
+                <small>{{ t.employeeName }}</small>
+                <span>{{ dueLabel(t) }} - {{ t.priority }}</span>
+                <div class="row-actions">
+                  <button type="button" (click)="openTaskComments(t)">Notes</button>
+                  <button type="button" *ngIf="t.status !== 'Done'" (click)="changeTaskStatus(t, 'Done')">Done</button>
+                  <button type="button" *ngIf="t.status !== 'Blocked'" (click)="changeTaskStatus(t, 'Blocked')">Block</button>
+                </div>
+              </article>
+            </section>
+          </div>
+          <table><thead><tr><th>Task</th><th>Employee</th><th>Due</th><th>Priority</th><th>Status</th><th></th></tr></thead>
+            <tbody><tr *ngFor="let t of filteredTasks()"><td><b>{{ t.title }}</b><small>{{ t.notes }}</small></td><td>{{ t.employeeName }}</td><td>{{ t.dueDate }}</td><td>{{ t.priority }}</td><td><span class="pill">{{ t.status }}</span></td><td><button (click)="changeTaskStatus(t, 'Done')">Done</button><button (click)="changeTaskStatus(t, 'Blocked')">Block</button><button *ngIf="canWrite()" (click)="editTask(t)">Edit</button><button *ngIf="canWrite()" class="danger" (click)="delete('onboardingtasks', t.id)">Delete</button></td></tr></tbody></table>
+          <app-empty-state *ngIf="!filteredTasks().length" title="No tasks in this view" detail="Change the filters or generate an onboarding plan from an employee profile."></app-empty-state>
+        </div>
+
+        <div class="table-wrap" *ngSwitchCase="'assets'">
+          <div class="utility-bar" *ngIf="canWrite()"><button (click)="exportAdvancedReport('assets')">Assets CSV</button></div>
+          <table><thead><tr><th>Asset</th><th>Category</th><th>Owner</th><th>Value</th><th>Status</th><th></th></tr></thead>
+            <tbody><tr *ngFor="let a of assets()"><td><b>{{ a.tag }}</b><small>{{ a.name }}</small></td><td>{{ a.category }}</td><td>{{ a.employeeName || 'Unassigned' }}</td><td>{{ a.value | currency }}</td><td><span class="pill">{{ a.status }}</span></td><td><button *ngIf="canWrite()" (click)="returnAsset(a.id)">Return</button><button *ngIf="canWrite()" (click)="editAsset(a)">Edit</button><button *ngIf="canAdmin()" class="danger" (click)="delete('companyassets', a.id)">Delete</button></td></tr></tbody></table>
+        </div>
+
+        <div class="calendar-grid" *ngSwitchCase="'calendar'">
+          <section class="calendar-board">
+            <div class="calendar-toolbar"><button type="button" class="ghost" (click)="previousMonth()">Prev</button><h2>{{ calendarMonth() }}</h2><button type="button" class="ghost" (click)="nextMonth()">Next</button></div>
+            <div class="calendar-weekdays"><b>Sun</b><b>Mon</b><b>Tue</b><b>Wed</b><b>Thu</b><b>Fri</b><b>Sat</b></div>
+            <div class="calendar-month">
+              <article class="calendar-day" *ngFor="let day of calendarDays()" [class.muted]="day.muted">
+                <b>{{ day.day }}</b>
+                <span *ngFor="let item of day.items" [class]="item.type">{{ item.title }} <small>{{ item.status }}</small></span>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <div class="templates-grid" *ngSwitchCase="'invites'">
+          <section class="panel account-panel">
+            <div class="panel-title"><h2>Invite employee</h2><span>7 day link</span></div>
+            <form [formGroup]="inviteForm" (ngSubmit)="createInvite()">
+              <label>Employee<select formControlName="employeeId"><option [ngValue]="0">Select employee</option><option *ngFor="let e of employees()" [ngValue]="e.id">{{ e.fullName }} - {{ e.email }}</option></select></label>
+              <label>Account role<select formControlName="role"><option *ngFor="let role of accountRoles" [value]="role">{{ role }}</option></select></label>
+              <button type="submit" [disabled]="inviteForm.invalid">Create invite</button>
+            </form>
+          </section>
+          <section class="panel"><div class="panel-title"><h2>Invite history</h2><span>{{ invites().length }}</span></div><ul class="task-list"><li *ngFor="let invite of invites()"><span>{{ invite.fullName }}</span><small>{{ invite.email }} - {{ invite.acceptedAt ? 'Accepted' : 'Open' }} - expires {{ invite.expiresAt | date:'shortDate' }}</small><code>{{ invite.token }}</code></li></ul></section>
+        </div>
+
+        <ng-container *ngSwitchCase="'reports'">
+          <div class="reports-grid" *ngIf="analytics() as report">
+            <section class="panel"><div class="panel-title"><h2>Department progress</h2><span>{{ report.pendingDocuments }} docs pending</span></div><ul class="task-list"><li *ngFor="let row of report.departmentProgress"><span>{{ row.department }}</span><small>{{ row.done }}/{{ row.total }} complete</small><div class="progress"><i [style.width.%]="row.rate"></i></div><strong>{{ row.rate }}%</strong></li></ul></section>
+            <section class="panel"><div class="panel-title"><h2>Intern ranking</h2><span>Lowest first</span></div><ul class="task-list"><li *ngFor="let row of report.employeeProgress.slice(0, 8)"><span>{{ row.employeeName }}</span><small>{{ row.department }} - {{ row.done }}/{{ row.total }}</small><div class="progress"><i [style.width.%]="row.rate"></i></div><button (click)="openEmployeeById(row.employeeId)">Open</button></li></ul></section>
+            <section class="panel"><div class="panel-title"><h2>Assets by category</h2><span>Value</span></div><ul class="task-list compact-list"><li *ngFor="let row of report.assetsByCategory"><span>{{ row.category }} <small>{{ row.count }} items</small></span><strong>{{ row.value | currency }}</strong></li></ul></section>
+            <section class="panel"><div class="panel-title"><h2>Task trend</h2><span>14 days</span></div><div class="trend-bars"><article *ngFor="let row of report.taskTrend"><i [style.height.px]="8 + (row.due * 8)"></i><small>{{ row.date.slice(5) }}</small></article></div></section>
+          </div>
+        </ng-container>
+
+        <div class="templates-grid" *ngSwitchCase="'templates'">
+          <section class="panel account-panel">
+            <div class="panel-title"><h2>Create template</h2><span>title|day|priority|notes</span></div>
+            <form [formGroup]="templateForm" (ngSubmit)="saveTemplate()">
+              <label>Name<input formControlName="name"></label>
+              <label>Scope<input formControlName="departmentScope"></label>
+              <label>Items<textarea rows="6" formControlName="itemsText"></textarea></label>
+              <button type="submit" [disabled]="templateForm.invalid">Save template</button>
+            </form>
+          </section>
+          <section class="panel" *ngFor="let template of templates()"><div class="panel-title"><h2>{{ template.name }}</h2><span>{{ template.departmentScope }}</span></div><ul class="task-list"><li *ngFor="let item of template.items"><span>{{ item.title }}</span><small>Day {{ item.dueOffsetDays }} - {{ item.priority }} - {{ item.notes }}</small></li></ul></section>
+        </div>
+
+        <div class="accounts-grid" *ngSwitchCase="'accounts'">
+          <section class="panel account-panel"><div class="panel-title"><h2>Create staff account</h2><span>Admin only</span></div><form [formGroup]="registerForm" (ngSubmit)="register()"><label>Full name<input formControlName="fullName"></label><label>Email<input type="email" formControlName="email"></label><label>Password<input type="password" formControlName="password"></label><label>Role<select formControlName="role"><option *ngFor="let role of accountRoles" [value]="role">{{ role }}</option></select></label><button type="submit" [disabled]="registerForm.invalid">Create account</button></form></section>
+          <section class="panel"><div class="panel-title"><h2>Operating workflow</h2><span>Real use</span></div><ol class="workflow-list"><li>Create the intern employee record.</li><li>Open their profile and generate the onboarding plan.</li><li>Upload contract or ID documents.</li><li>Track tasks, overdue work, welcome emails, and audit history.</li></ol></section>
+        </div>
+
+        <div class="accounts-grid" *ngSwitchCase="'settings'">
+          <section class="panel account-panel"><div class="panel-title"><h2>Company settings</h2><span>Saved in DB</span></div><form [formGroup]="settingsForm" (ngSubmit)="saveSettings()"><label>Company name<input formControlName="companyName"></label><label>Default template<select formControlName="defaultTemplateId"><option [ngValue]="0">No default override</option><option *ngFor="let template of templates()" [ngValue]="template.id">{{ template.name }}</option></select></label><label>Reminder frequency days<input type="number" formControlName="reminderFrequencyDays"></label><label>Email sender name<input formControlName="emailSenderName"></label><button type="submit" [disabled]="settingsForm.invalid">Save settings</button></form></section>
+          <section class="panel" *ngIf="settings() as s"><div class="panel-title"><h2>Configuration</h2><span>{{ companySettings()?.companyName || s.companyName }}</span></div><ul class="task-list"><li><span>Email</span><strong>{{ s.emailEnabled ? 'Enabled' : 'Disabled' }}</strong></li><li><span>OpenAI</span><strong>{{ s.openAiEnabled ? 'Enabled' : 'Fallback mode' }}</strong></li><li><span>Model</span><strong>{{ s.openAiModel }}</strong></li></ul></section>
+          <section class="panel"><div class="panel-title"><h2>Setup checklist</h2><span>Admin</span></div><ol class="workflow-list"><li>Configure SMTP in appsettings to send real email.</li><li>Add OpenAI API key for rich AI answers.</li><li>Create onboarding templates for each department.</li><li>Use reports and reminders weekly.</li></ol></section>
+        </div>
+
+        <div class="audit-grid" *ngSwitchCase="'audit'">
+          <section class="panel"><div class="panel-title"><h2>Notifications</h2><span>{{ notifications().length }}</span></div><ul class="task-list"><li *ngFor="let n of notifications()"><span>{{ n.subject }}</span><small>{{ n.recipientEmail }} - {{ n.status }} - {{ n.createdAt | date:'short' }}</small></li></ul></section>
+          <section class="panel"><div class="panel-title"><h2>Audit log</h2><span>{{ audit().length }}</span></div><ul class="task-list"><li *ngFor="let a of audit()"><span>{{ a.action }} {{ a.entityName }}</span><small>{{ a.actor }} - {{ a.details }} - {{ a.createdAt | date:'short' }}</small></li></ul></section>
+        </div>
+      </section>
+    </section>
+
+    <aside class="drawer" *ngIf="profile() as p">
+      <button class="drawer-close" (click)="closeProfile()">Close</button>
+      <h2>{{ p.employee.fullName }}</h2>
+      <p>{{ p.employee.role }} - {{ p.employee.departmentName }}</p>
+      <div class="profile-command" *ngIf="profileHealth() as health">
+        <article><small>Readiness</small><strong>{{ health.score }}</strong><span>/100</span></article>
+        <article><small>Progress</small><strong>{{ health.progress }}%</strong><span>{{ health.done }}/{{ health.total }} done</span></article>
+        <article><small>Risk</small><strong>{{ health.late + health.blocked }}</strong><span>{{ health.late }} late, {{ health.blocked }} blocked</span></article>
+      </div>
+      <div class="next-action" *ngIf="profileHealth()?.nextTask as next"><small>Next best action</small><b>{{ next.title }}</b><span>{{ dueLabel(next) }} - {{ next.priority }}</span><button type="button" (click)="openTaskComments(next)">Open notes</button></div>
+      <div class="profile-score"><span>Onboarding progress</span><div class="progress"><i [style.width.%]="employeeProgress(p.employee.id)"></i></div><strong>{{ employeeProgress(p.employee.id) }}%</strong></div>
+      <div class="drawer-actions"><select *ngIf="canWrite()" [value]="selectedTemplateId() || ''" (change)="selectedTemplateId.set($any($event.target).value ? +$any($event.target).value : null)"><option value="">Default active template</option><option *ngFor="let template of templates()" [value]="template.id">{{ template.name }}</option></select><button *ngIf="canWrite()" (click)="generateOnboardingPlan(p.employee.id)">Generate onboarding plan</button><button *ngIf="canWrite()" (click)="sendWelcome(p.employee.id)">Send welcome email</button></div>
+      <section><h3>Tasks</h3><ul><li *ngFor="let t of p.tasks">{{ t.title }} <span>{{ dueLabel(t) }}</span> <button type="button" (click)="openTaskComments(t)">Notes</button><button type="button" *ngIf="t.status !== 'Done'" (click)="changeTaskStatus(t, 'Done')">Done</button></li></ul></section>
+      <section><h3>Assets</h3><ul><li *ngFor="let a of p.assets">{{ a.tag }} - {{ a.name }}</li></ul></section>
+      <section><h3>Documents</h3><form [formGroup]="documentForm"><select formControlName="documentType"><option>Contract</option><option>ID</option><option>Certificate</option><option>Other</option></select><input type="file" #docFile><button type="button" *ngIf="canWrite()" (click)="uploadDocument(p.employee.id, docFile.files)">Upload</button></form><label *ngIf="canWrite()">Rejection reason<input [value]="rejectionReason()" (input)="rejectionReason.set($any($event.target).value)" placeholder="Required when rejecting"></label><ul><li *ngFor="let d of p.documents">{{ d.documentType }} - {{ d.fileName }} <span>{{ d.approvalStatus }}</span> <small *ngIf="d.rejectionReason">{{ d.rejectionReason }}</small> <button type="button" (click)="downloadDocument(d.id)">Download</button><button *ngIf="canWrite()" type="button" (click)="reviewDocumentWithReason(d.id, 'Approved')">Approve</button><button class="danger" *ngIf="canWrite()" type="button" (click)="reviewDocumentWithReason(d.id, 'Rejected')">Reject</button></li></ul></section>
+      <section><h3>Emails</h3><ul><li *ngFor="let n of p.notifications">{{ n.subject }} <span>{{ n.isRead ? 'Read' : 'Unread' }}</span><button *ngIf="!n.isRead" type="button" (click)="markNotificationRead(n.id)">Mark read</button></li></ul></section>
+      <section><h3>Timeline</h3><ul><li *ngFor="let item of profileTimeline()">{{ item.action }} {{ item.entityName }} <small>{{ item.actor }} - {{ item.createdAt | date:'short' }}</small></li></ul></section>
+      <section *ngIf="selectedTask() as task"><h3>{{ task.title }} notes</h3><form [formGroup]="commentForm" (ngSubmit)="addTaskComment()"><textarea rows="3" formControlName="body"></textarea><button type="submit" [disabled]="commentForm.invalid">Add note</button></form><ul><li *ngFor="let c of comments()">{{ c.body }} <small>{{ c.author }} - {{ c.createdAt | date:'short' }}</small></li></ul></section>
+    </aside>
+
+    <aside class="chat-drawer" *ngIf="chatOpen()">
+      <div class="chat-head">
+        <div><h2>InternHub Assistant</h2><small>Ask about onboarding operations</small></div>
+        <button class="ghost" type="button" (click)="chatOpen.set(false)">Close</button>
+      </div>
+      <div class="chat-messages">
+        <article *ngFor="let message of chatMessages()" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+          <p>{{ message.content }}</p>
+          <small *ngIf="message.role === 'assistant'">{{ message.usedOpenAi ? 'OpenAI' : 'Local fallback' }}</small>
+        </article>
+        <article class="assistant" *ngIf="chatBusy()"><p>Thinking...</p></article>
+      </div>
+      <form class="chat-form" [formGroup]="chatForm" (ngSubmit)="sendChat()">
+        <input formControlName="message" placeholder="Ask what needs attention today">
+        <button type="submit" [disabled]="chatForm.invalid || chatBusy()">Send</button>
+      </form>
+    </aside>
+
+    <aside class="chat-drawer team-chat" *ngIf="teamChatOpen()">
+      <div class="chat-head">
+        <div><h2>Team Chat</h2><small>Registered users online workspace</small></div>
+        <button class="ghost" type="button" (click)="teamChatOpen.set(false)">Close</button>
+      </div>
+      <div class="chat-messages">
+        <article class="assistant" *ngFor="let message of teamMessages()">
+          <p>{{ message.body }}</p>
+          <small>{{ message.senderName }} - {{ message.createdAt | date:'short' }}</small>
+        </article>
+      </div>
+      <form class="chat-form" [formGroup]="teamChatForm" (ngSubmit)="sendTeamMessage()">
+        <input formControlName="body" placeholder="Message the team">
+        <button type="submit" [disabled]="teamChatForm.invalid">Send</button>
+      </form>
+    </aside>
+  </main>
+</ng-template>

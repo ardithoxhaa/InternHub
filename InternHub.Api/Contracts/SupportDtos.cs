@@ -1,0 +1,27 @@
+namespace InternHub.Api.Contracts;
+
+public record AuditLogDto(int Id, string Actor, string Action, string EntityName, int? EntityId, string? Details, DateTime CreatedAt);
+public record NotificationDto(int Id, string RecipientEmail, string Subject, string Body, string Status, DateTime CreatedAt, DateTime? SentAt, bool IsRead, int? EmployeeId);
+public record EmployeeDocumentDto(int Id, string FileName, string DocumentType, long SizeBytes, DateTime UploadedAt, string ApprovalStatus, string? ReviewedBy, DateTime? ReviewedAt, string? RejectionReason, int EmployeeId);
+public record CalendarItemDto(int Id, string Title, string Date, string Type, string Status, string Owner);
+public record OnboardingTemplateDto(int Id, string Name, string DepartmentScope, bool IsActive, IEnumerable<OnboardingTemplateItemDto> Items);
+public record OnboardingTemplateItemDto(int Id, string Title, string? Notes, int DueOffsetDays, string Priority);
+public record TaskCommentDto(int Id, string Author, string Body, DateTime CreatedAt, int OnboardingTaskId);
+public record TaskCommentCreateDto(string Body);
+public record MyWorkDto(EmployeeDto? Employee, IEnumerable<OnboardingTaskDto> Tasks, IEnumerable<CompanyAssetDto> Assets, IEnumerable<EmployeeDocumentDto> Documents, IEnumerable<NotificationDto> Notifications);
+public record TemplateUpsertDto(string Name, string DepartmentScope, bool IsActive, IEnumerable<TemplateItemUpsertDto> Items);
+public record TemplateItemUpsertDto(string Title, string? Notes, int DueOffsetDays, string Priority);
+public record RoleHomeDto(string Role, IEnumerable<string> FocusItems, object Metrics);
+public record SearchResultDto(string Type, int Id, string Title, string Subtitle);
+public record SettingsStatusDto(bool EmailEnabled, bool OpenAiEnabled, string OpenAiModel, string CompanyName);
+public record TeamChatMessageDto(int Id, string SenderName, string SenderEmail, string Body, DateTime CreatedAt);
+public record DocumentReviewDto(string Status, string? Reason);
+public record InviteCreateDto(int EmployeeId, string Role);
+public record InviteDto(int Id, string Email, string FullName, string Role, string Token, DateTime CreatedAt, DateTime ExpiresAt, DateTime? AcceptedAt, int? EmployeeId);
+public record AcceptInviteDto(string Token, string Password);
+public record CompanySettingsDto(string CompanyName, int? DefaultTemplateId, int ReminderFrequencyDays, string EmailSenderName);
+public record AnalyticsDto(IEnumerable<DepartmentProgressDto> DepartmentProgress, IEnumerable<TaskTrendDto> TaskTrend, IEnumerable<AssetCategoryDto> AssetsByCategory, IEnumerable<EmployeeProgressDto> EmployeeProgress, int PendingDocuments);
+public record DepartmentProgressDto(string Department, int Done, int Total, double Rate);
+public record TaskTrendDto(string Date, int Created, int Due, int Completed);
+public record AssetCategoryDto(string Category, int Count, decimal Value);
+public record EmployeeProgressDto(int EmployeeId, string EmployeeName, string Department, int Done, int Total, double Rate);

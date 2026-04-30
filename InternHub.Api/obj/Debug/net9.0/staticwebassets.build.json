@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "KecetZK03oqVAF1KPbhAIiDjIj6R+vPW8na8oSTSuNk=",
+  "Source": "InternHub.Api",
+  "BasePath": "_content/InternHub.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
