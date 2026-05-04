@@ -14,8 +14,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
         </div>
       </div>
       <div class="hero-product" aria-label="Product preview">
-        <div class="builder-top"><span></span><span></span><span></span></div>
-        <div class="builder-grid">
+        <div class="preview-top"><span></span><span></span><span></span></div>
+        <div class="preview-grid">
           <aside><b>Workspace</b><i>Interns</i><i>Tasks</i><i>Assets</i></aside>
           <main><strong>Onboarding Plan</strong><div></div><div></div><div></div></main>
           <section><b>Readiness</b><em>Tasks ready</em><em>Docs checked</em><button type="button">Review</button></section>

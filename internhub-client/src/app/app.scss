@@ -1,7 +1,7 @@
 :host {
   --bg: #e8edf3;
   --bg-strong: #dce4ec;
-  --surface: #ffffff;
+  --surface: #fbfcfd;
   --surface-soft: #f6f8fb;
   --surface-muted: #eef3f7;
   --surface-dark: #101826;
@@ -150,7 +150,7 @@ textarea {
   min-height: 40px;
   border: 1px solid #bfccd8;
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   padding: 9px 11px;
   font: inherit;
@@ -270,7 +270,7 @@ form {
   justify-content: center;
   border: 1px solid #b8c7d3;
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   padding: 9px 13px;
   font-weight: 780;
@@ -320,7 +320,7 @@ form {
 }
 
 .hero-actions,
-.builder-actions,
+.hero-actions,
 .actions,
 .wizard-actions,
 .row-actions,
@@ -336,11 +336,11 @@ form {
   overflow: hidden;
   border: 1px solid #b8c7d3;
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow-lg);
 }
 
-.builder-top {
+.preview-top {
   display: flex;
   gap: 7px;
   padding: 14px;
@@ -354,7 +354,7 @@ form {
   }
 }
 
-.builder-grid {
+.preview-grid {
   min-height: 410px;
   display: grid;
   grid-template-columns: 130px minmax(0, 1fr) 150px;
@@ -370,7 +370,7 @@ form {
     gap: 10px;
     border: 1px solid #d4dee7;
     border-radius: var(--radius);
-    background: #fff;
+    background: var(--surface);
     padding: 14px;
   }
 
@@ -429,7 +429,7 @@ form {
   padding: 20px;
   border: 1px solid #ccd8e3;
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
 
@@ -655,7 +655,7 @@ app-sidebar {
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
 
@@ -664,7 +664,7 @@ app-sidebar {
   gap: 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   padding: 10px;
 }
 
@@ -675,7 +675,7 @@ app-sidebar {
   align-items: start;
 }
 
-.builder-dashboard,
+.onboarding-dashboard,
 .my-work-grid,
 .calendar-grid,
 .templates-grid,
@@ -688,11 +688,11 @@ app-sidebar {
   gap: 18px;
 }
 
-.builder-dashboard {
+.onboarding-dashboard {
   min-height: calc(100vh - 160px);
 }
 
-.builder-hero {
+.onboarding-hero {
   min-height: 340px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(360px, .65fr);
@@ -729,7 +729,7 @@ app-sidebar {
   }
 }
 
-.builder-live-preview {
+.onboarding-preview {
   min-height: 260px;
   display: grid;
   align-content: start;
@@ -764,8 +764,8 @@ app-sidebar {
   }
 }
 
-.builder-stats,
-.project-grid,
+.onboarding-stats,
+.intern-grid,
 .my-work-grid,
 .templates-grid,
 .accounts-grid,
@@ -776,9 +776,9 @@ app-sidebar {
   gap: 14px;
 }
 
-.builder-stats article,
-.project-card,
-.projects-panel,
+.onboarding-stats article,
+.intern-card,
+.interns-panel,
 .dashboard-side > section,
 .panel,
 .editor,
@@ -788,11 +788,11 @@ app-sidebar {
 .task-column {
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow-md);
 }
 
-.builder-stats article {
+.onboarding-stats article {
   min-height: 136px;
   display: grid;
   align-content: space-between;
@@ -819,7 +819,7 @@ app-sidebar {
   align-items: start;
 }
 
-.projects-panel,
+.interns-panel,
 .panel,
 .editor,
 .calendar-board,
@@ -850,18 +850,18 @@ app-sidebar {
   font-size: .78rem;
 }
 
-.project-card {
+.intern-card {
   overflow: hidden;
   display: grid;
   transition: transform .16s ease, box-shadow .16s ease;
 }
 
-.project-card:hover {
+.intern-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
 
-.project-preview {
+.intern-preview {
   min-height: 130px;
   display: grid;
   gap: 8px;
@@ -888,7 +888,7 @@ app-sidebar {
   }
 }
 
-.project-body {
+.intern-card-body {
   display: grid;
   gap: 10px;
   padding: 14px;
@@ -908,7 +908,7 @@ app-sidebar {
   }
 }
 
-.project-progress,
+.intern-progress,
 .progress {
   height: 8px;
   border-radius: 999px;
@@ -1010,7 +1010,7 @@ th {
 }
 
 tbody tr {
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 0 0 1px #dbe4ea;
 }
 
@@ -1056,7 +1056,7 @@ td small {
     gap: 7px;
     border: 1px solid #d6e0e8;
     border-radius: var(--radius);
-    background: #fff;
+    background: var(--surface);
     padding: 12px;
   }
 
@@ -1100,7 +1100,7 @@ td small {
   border: 1px solid #ccd8e1;
   border-left: 4px solid var(--line-strong);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   padding: 12px;
   box-shadow: var(--shadow-sm);
 
@@ -1159,7 +1159,7 @@ td small {
   gap: 6px;
   border: 1px solid #cfdae3;
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   padding: 8px;
 
   &.muted {
@@ -1217,7 +1217,7 @@ td small {
   margin-top: 16px;
   border: 1px solid #d6e0e8;
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   padding: 16px;
 }
 
@@ -1235,7 +1235,7 @@ td small {
   padding: 12px 12px 12px 32px;
   border: 1px solid #d6e0e8;
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   color: var(--muted-strong);
 
   li {
@@ -1284,7 +1284,7 @@ code {
   width: min(540px, 100vw);
   overflow: auto;
   border-left: 1px solid var(--line);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow-lg);
   padding: 24px;
 
@@ -1348,7 +1348,7 @@ code {
     margin-top: 0;
     border: 1px solid #d2dde6;
     border-radius: var(--radius);
-    background: #fff;
+    background: var(--surface);
     padding: 16px;
   }
 }
@@ -1370,7 +1370,7 @@ code {
     gap: 4px;
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    background: #fff;
+    background: var(--surface);
     padding: 11px;
   }
 }
@@ -1487,7 +1487,7 @@ code {
 
 @media (max-width: 1180px) {
   .landing-hero,
-  .builder-hero,
+  .onboarding-hero,
   .dashboard-main,
   .wizard-shell,
   .workspace,
@@ -1540,8 +1540,8 @@ code {
 
   .feature-grid,
   .steps-grid,
-  .builder-stats,
-  .project-grid,
+  .onboarding-stats,
+  .intern-grid,
   .my-work-grid,
   .templates-grid,
   .accounts-grid,
@@ -1557,11 +1557,11 @@ code {
     grid-template-columns: 1fr;
   }
 
-  .builder-grid {
+  .preview-grid {
     grid-template-columns: 1fr;
   }
 
-  .builder-hero,
+  .onboarding-hero,
   .panel,
   .editor,
   .table-wrap,
@@ -1591,3 +1591,6 @@ code {
     height: min(660px, calc(100vh - 24px));
   }
 }
+
+
+

@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
   selector: 'app-dashboard-stats',
   imports: [CommonModule],
   template: `
-    <section class="builder-stats">
+    <section class="onboarding-stats">
       <article *ngFor="let stat of stats" [class]="stat.tone">
         <small>{{ stat.label }}</small>
         <strong>{{ stat.value }}</strong>

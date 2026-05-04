@@ -6,7 +6,7 @@ import * as signalR from '@microsoft/signalr';
 import { forkJoin } from 'rxjs';
 import { InternHubApiService } from './core/internhub-api.service';
 import { DashboardStatsComponent } from './dashboard/dashboard-stats.component';
-import { ProjectCardComponent } from './dashboard/project-card.component';
+import { InternCardComponent } from './dashboard/intern-card.component';
 import { FeatureSectionComponent } from './landing/feature-section.component';
 import { HowItWorksSectionComponent } from './landing/how-it-works-section.component';
 import { LandingFooterComponent } from './landing/landing-footer.component';
@@ -47,11 +47,11 @@ interface CompanySettings { companyName: string; defaultTemplateId?: number | nu
 interface Analytics { departmentProgress: { department: string; done: number; total: number; rate: number }[]; taskTrend: { date: string; created: number; due: number; completed: number }[]; assetsByCategory: { category: string; count: number; value: number }[]; employeeProgress: { employeeId: number; employeeName: string; department: string; done: number; total: number; rate: number }[]; pendingDocuments: number; }
 interface JourneyPhase { key: string; title: string; signal: string; employees: (Employee & { progress: number; late: number; nextTask?: OnboardingTask })[]; }
 interface ActionQueueItem { type: 'task' | 'employee' | 'asset' | 'document'; tone: WorkTone; title: string; detail: string; action: string; targetId?: number; }
-interface BuilderProject { id: number; title: string; detail: string; status: string; statusTone: string; progress: number; }
+interface InternSummaryCard { id: number; title: string; detail: string; status: string; statusTone: string; progress: number; }
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, ReactiveFormsModule, SidebarComponent, EmptyStateComponent, LandingNavbarComponent, LandingHeroComponent, FeatureSectionComponent, HowItWorksSectionComponent, LandingFooterComponent, DashboardStatsComponent, ProjectCardComponent],
+  imports: [CommonModule, ReactiveFormsModule, SidebarComponent, EmptyStateComponent, LandingNavbarComponent, LandingHeroComponent, FeatureSectionComponent, HowItWorksSectionComponent, LandingFooterComponent, DashboardStatsComponent, InternCardComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   encapsulation: ViewEncapsulation.None
@@ -244,7 +244,7 @@ export class App implements OnInit {
     .slice(0, 8));
   blockedTasks = computed(() => this.tasks().filter(t => t.status === 'Blocked'));
   criticalOpenTasks = computed(() => this.tasks().filter(t => t.status !== 'Done' && (t.priority === 'Critical' || this.isOverdue(t.dueDate))));
-  builderStats = computed(() => {
+  onboardingStats = computed(() => {
     const published = this.employees().filter(e => e.status === 'Active' || e.status === 'Completed').length;
     const drafts = Math.max(0, this.employees().length - published);
     const total = Math.max(this.employees().length, published + drafts);
@@ -255,7 +255,7 @@ export class App implements OnInit {
       { label: 'Templates available', value: Math.max(this.templates().length, 6), detail: 'Reusable onboarding plans', tone: 'violet' }
     ];
   });
-  builderProjects = computed<BuilderProject[]>(() => this.employees().slice(0, 6).map(employee => {
+  recentInternCards = computed<InternSummaryCard[]>(() => this.employees().slice(0, 6).map(employee => {
     const progress = this.employeeProgress(employee.id);
     const published = employee.status === 'Active' || employee.status === 'Completed' || progress >= 85;
     return {
@@ -563,9 +563,9 @@ export class App implements OnInit {
   }
 
   continueEditing(): void {
-    const project = this.builderProjects()[0];
-    if (project) {
-      this.openEmployeeById(project.id);
+    const intern = this.recentInternCards()[0];
+    if (intern) {
+      this.openEmployeeById(intern.id);
       return;
     }
 

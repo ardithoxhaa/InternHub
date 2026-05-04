@@ -100,33 +100,33 @@
           </form>
         </div>
 
-        <div class="builder-dashboard" *ngSwitchCase="'home'">
-          <section class="builder-hero">
+        <div class="onboarding-dashboard" *ngSwitchCase="'home'">
+          <section class="onboarding-hero">
             <div>
               <span class="workspace-chip">Intern onboarding workspace</span>
               <h2>Launch, support, and track every intern from one calm operations dashboard.</h2>
               <p>Manage intern profiles, onboarding tasks, documents, assets, templates, invites, and readiness without leaving the workspace.</p>
-              <div class="builder-actions">
+              <div class="hero-actions">
                 <button type="button" (click)="setTab('wizard')">Launch New Intern</button>
                 <button class="ghost" type="button" (click)="setTab('templates')">Browse Onboarding Templates</button>
                 <button class="ghost" type="button" (click)="continueEditing()">Continue Onboarding</button>
               </div>
             </div>
-            <div class="builder-live-preview">
+            <div class="onboarding-preview">
               <b>Onboarding snapshot</b>
               <span></span><span></span><span></span>
             </div>
           </section>
 
-          <app-dashboard-stats [stats]="builderStats()"></app-dashboard-stats>
+          <app-dashboard-stats [stats]="onboardingStats()"></app-dashboard-stats>
 
           <section class="dashboard-main">
-            <div class="projects-panel">
-              <div class="panel-title"><h2>Recent interns</h2><span>{{ builderProjects().length }} profiles</span></div>
-              <div class="project-grid" *ngIf="builderProjects().length; else noProjects">
-                <app-project-card *ngFor="let project of builderProjects()" [title]="project.title" [detail]="project.detail" [status]="project.status" [statusTone]="project.statusTone" [progress]="project.progress" (open)="openEmployeeById(project.id)"></app-project-card>
+            <div class="interns-panel">
+              <div class="panel-title"><h2>Recent interns</h2><span>{{ recentInternCards().length }} profiles</span></div>
+              <div class="intern-grid" *ngIf="recentInternCards().length; else noInterns">
+                <app-intern-card *ngFor="let intern of recentInternCards()" [title]="intern.title" [detail]="intern.detail" [status]="intern.status" [statusTone]="intern.statusTone" [progress]="intern.progress" (open)="openEmployeeById(intern.id)"></app-intern-card>
               </div>
-              <ng-template #noProjects>
+              <ng-template #noInterns>
                 <app-empty-state title="No interns yet" detail="Create your first intern profile with the launch wizard." actionLabel="Launch intern" (action)="setTab('wizard')"></app-empty-state>
               </ng-template>
             </div>
