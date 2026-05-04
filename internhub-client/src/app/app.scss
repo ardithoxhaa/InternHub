@@ -356,6 +356,113 @@ td {
   color: #eef4f8 !important;
 }
 
+.chat-drawer {
+  background: linear-gradient(180deg, #111827, #172033) !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, .36) !important;
+  color: #eef4f8 !important;
+  z-index: 80 !important;
+}
+
+.chat-drawer.team-chat {
+  background: linear-gradient(180deg, #0f1f1c, #152b27) !important;
+}
+
+.chat-head {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+
+.chat-head h2 {
+  color: #fff;
+}
+
+.chat-head small,
+.chat-drawer small {
+  color: #aebccd !important;
+}
+
+.chat-head .ghost,
+.chat-head button {
+  background: rgba(255, 255, 255, .08) !important;
+  border-color: rgba(255, 255, 255, .16) !important;
+  color: #eef4f8 !important;
+}
+
+.chat-head .ghost:hover,
+.chat-head button:hover {
+  background: rgba(255, 255, 255, .14) !important;
+  border-color: rgba(255, 255, 255, .24) !important;
+}
+
+.chat-messages {
+  padding: 4px 4px 4px 0;
+}
+
+.chat-messages article {
+  border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .14);
+}
+
+.chat-messages .assistant {
+  background: rgba(255, 255, 255, .09) !important;
+  color: #eef4f8 !important;
+}
+
+.chat-messages .user {
+  background: linear-gradient(135deg, #2563eb, #168464) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+.team-chat .chat-messages .assistant {
+  background: rgba(255, 255, 255, .1) !important;
+}
+
+.chat-form {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+}
+
+.chat-form input {
+  background: #0f1726 !important;
+  border-color: rgba(255, 255, 255, .16) !important;
+  color: #fff !important;
+}
+
+.chat-form input::placeholder {
+  color: #7f8ca0;
+}
+
+.chat-form input:focus {
+  background: #111d31 !important;
+  border-color: #5b8cff !important;
+}
+
+.chat-form button {
+  background: linear-gradient(135deg, #2563eb, #168464) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+@media (max-width: 1180px) {
+  .team-chat {
+    right: 24px !important;
+    bottom: 724px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .chat-drawer,
+  .team-chat {
+    right: 12px !important;
+    bottom: 12px !important;
+    width: calc(100vw - 24px) !important;
+    height: min(660px, calc(100vh - 24px)) !important;
+  }
+}
+
 h1,
 h2,
 h3,
