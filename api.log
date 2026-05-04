@@ -6,12 +6,12 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
 info: Microsoft.EntityFrameworkCore.Migrations[20411]
       Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (55ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (86ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       DECLARE @result int;
       EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
       SELECT @result
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (17ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (36ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
       BEGIN
           CREATE TABLE [__EFMigrationsHistory] (
@@ -21,31 +21,31 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
           );
       END;
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT [MigrationId], [ProductVersion]
       FROM [__EFMigrationsHistory]
       ORDER BY [MigrationId];
 info: Microsoft.EntityFrameworkCore.Migrations[20405]
       No migrations were applied. The database is already up to date.
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (16ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       DECLARE @result int;
       EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
       SELECT @result
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (69ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       UPDATE CompanyAssets SET Status = 'Assigned' WHERE Status = ''
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (13ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       UPDATE EmployeeDocuments SET ApprovalStatus = 'Pending' WHERE ApprovalStatus = ''
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (39ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (15ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT CASE
           WHEN EXISTS (
               SELECT 1
@@ -53,7 +53,7 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
           ELSE CAST(0 AS bit)
       END
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (11ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (160ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT CASE
           WHEN EXISTS (
               SELECT 1
@@ -61,7 +61,7 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
           ELSE CAST(0 AS bit)
       END
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (188ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT CASE
           WHEN EXISTS (
               SELECT 1
@@ -69,12 +69,12 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
           ELSE CAST(0 AS bit)
       END
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (16ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (13ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT TOP(1) [a].[Id], [a].[CreatedAt], [a].[Email], [a].[EmployeeId], [a].[FullName], [a].[IsActive], [a].[PasswordHash], [a].[Role]
       FROM [AppUsers] AS [a]
       WHERE [a].[Email] = N'intern@internhub.test' AND [a].[EmployeeId] IS NULL
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT TOP(1) [e].[Id], [e].[DepartmentId], [e].[Email], [e].[EndDate], [e].[FirstName], [e].[LastName], [e].[ManagerUserId], [e].[Role], [e].[StartDate], [e].[Status]
       FROM [Employees] AS [e]
       WHERE [e].[Email] = N'ardit.hoxha@internhub.test'
@@ -86,3 +86,207 @@ info: Microsoft.Hosting.Lifetime[0]
       Hosting environment: Development
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: C:\Users\ardit.hoxha\Desktop\CreaPrject\InternHub.Api
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [d].[Name], (
+          SELECT COUNT(*)
+          FROM [Employees] AS [e]
+          WHERE [d].[Id] = [e].[DepartmentId])
+      FROM [Departments] AS [d]
+      ORDER BY [d].[Name]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (34ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [o].[Id], [o].[DueDate], [o].[EmployeeId], [o].[Notes], [o].[Priority], [o].[Status], [o].[Title], [e].[Id], [e].[DepartmentId], [e].[Email], [e].[EndDate], [e].[FirstName], [e].[LastName], [e].[ManagerUserId], [e].[Role], [e].[StartDate], [e].[Status]
+      FROM [OnboardingTasks] AS [o]
+      INNER JOIN [Employees] AS [e] ON [o].[EmployeeId] = [e].[Id]
+      ORDER BY [o].[DueDate]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (24ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [e].[Id], [e].[DepartmentId], [e].[Email], [e].[EndDate], [e].[FirstName], [e].[LastName], [e].[ManagerUserId], [e].[Role], [e].[StartDate], [e].[Status], [d].[Id], [d].[Budget], [d].[Code], [d].[CreatedAt], [d].[Description], [d].[LeadName], [d].[Name]
+      FROM [Employees] AS [e]
+      INNER JOIN [Departments] AS [d] ON [e].[DepartmentId] = [d].[Id]
+      ORDER BY [e].[LastName], [e].[FirstName]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (40ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [c].[Id], [c].[AssignedDate], [c].[Category], [c].[Condition], [c].[EmployeeId], [c].[Name], [c].[ReturnDate], [c].[Status], [c].[Tag], [c].[Value], [e].[Id], [e].[DepartmentId], [e].[Email], [e].[EndDate], [e].[FirstName], [e].[LastName], [e].[ManagerUserId], [e].[Role], [e].[StartDate], [e].[Status]
+      FROM [CompanyAssets] AS [c]
+      LEFT JOIN [Employees] AS [e] ON [c].[EmployeeId] = [e].[Id]
+      ORDER BY [c].[Tag]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (36ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [o0].[Id], [o0].[Title], [o0].[DueDate], [e].[FirstName] + N' ' + [e].[LastName], CAST([o0].[Priority] AS nvarchar(max)), CAST([o0].[Status] AS nvarchar(max))
+      FROM (
+          SELECT TOP(@__p_0) [o].[Id], [o].[DueDate], [o].[EmployeeId], [o].[Priority], [o].[Status], [o].[Title]
+          FROM [OnboardingTasks] AS [o]
+          WHERE [o].[Status] <> N'Done'
+          ORDER BY [o].[DueDate]
+      ) AS [o0]
+      INNER JOIN [Employees] AS [e] ON [o0].[EmployeeId] = [e].[Id]
+      ORDER BY [o0].[DueDate]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [d].[Id], [d].[Name], [d].[Code], [d].[LeadName], [d].[Description], [d].[Budget], (
+          SELECT COUNT(*)
+          FROM [Employees] AS [e]
+          WHERE [d].[Id] = [e].[DepartmentId])
+      FROM [Departments] AS [d]
+      ORDER BY [d].[Name]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (24ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [e].[Id], [e].[FirstName] + N' ' + [e].[LastName] + N' starts', [e].[StartDate], CAST([e].[Status] AS nvarchar(max)), [d].[Name]
+      FROM [Employees] AS [e]
+      INNER JOIN [Departments] AS [d] ON [e].[DepartmentId] = [d].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [OnboardingTasks] AS [o]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (30ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [o].[Id], [o].[Title], [o].[DueDate], CAST([o].[Status] AS nvarchar(max)), [e].[FirstName] + N' ' + [e].[LastName]
+      FROM [OnboardingTasks] AS [o]
+      INNER JOIN [Employees] AS [e] ON [o].[EmployeeId] = [e].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [OnboardingTasks] AS [o]
+      WHERE [o].[Status] = N'Done'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Employees] AS [e]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@__email_0='?' (Size = 160)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [a].[Id], [a].[CreatedAt], [a].[Email], [a].[EmployeeId], [a].[FullName], [a].[IsActive], [a].[PasswordHash], [a].[Role]
+      FROM [AppUsers] AS [a]
+      WHERE [a].[Email] = @__email_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [EmployeeDocuments] AS [e]
+      WHERE [e].[ApprovalStatus] = N'Pending'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (21ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [e0].[Id], [e0].[FirstName] + N' ' + [e0].[LastName], [e0].[StartDate], [d].[Name]
+      FROM (
+          SELECT TOP(@__p_0) [e].[Id], [e].[DepartmentId], [e].[FirstName], [e].[LastName], [e].[StartDate]
+          FROM [Employees] AS [e]
+          WHERE [e].[StartDate] >= CAST(CONVERT(date, GETDATE()) AS date)
+          ORDER BY [e].[StartDate]
+      ) AS [e0]
+      INNER JOIN [Departments] AS [d] ON [e0].[DepartmentId] = [d].[Id]
+      ORDER BY [e0].[StartDate]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@__today_0='?' (DbType = Date)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [OnboardingTasks] AS [o]
+      WHERE [o].[Status] <> N'Done' AND [o].[DueDate] < @__today_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [OnboardingTasks] AS [o]
+      WHERE [o].[Status] = N'Blocked'
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (35ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Employees] AS [e]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (46ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(@__p_0) [a].[Id], [a].[Actor], [a].[Action], [a].[EntityName], [a].[EntityId], [a].[Details], [a].[CreatedAt]
+      FROM [AuditLogs] AS [a]
+      ORDER BY [a].[CreatedAt] DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (22ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Notifications] AS [n]
+      WHERE [n].[IsRead] = CAST(0 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (56ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t0].[Id], [t0].[SenderName], [t0].[SenderEmail], [t0].[Body], [t0].[CreatedAt]
+      FROM (
+          SELECT TOP(@__p_0) [t].[Id], [t].[Body], [t].[CreatedAt], [t].[SenderEmail], [t].[SenderName]
+          FROM [TeamChatMessages] AS [t]
+          ORDER BY [t].[CreatedAt] DESC
+      ) AS [t0]
+      ORDER BY [t0].[CreatedAt]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (21ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Departments] AS [d]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (18ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [o].[Id], [o].[Name], [o].[DepartmentScope], [o].[IsActive], [o0].[Id], [o0].[Title], [o0].[Notes], [o0].[DueOffsetDays], CAST([o0].[Priority] AS nvarchar(max))
+      FROM [OnboardingTemplates] AS [o]
+      LEFT JOIN [OnboardingTemplateItems] AS [o0] ON [o].[Id] = [o0].[OnboardingTemplateId]
+      ORDER BY [o].[Name], [o].[Id], [o0].[DueOffsetDays]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (33ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [OnboardingTasks] AS [o]
+      WHERE [o].[Status] <> N'Done'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [e].[Id], [e].[DepartmentId], [e].[Email], [e].[EndDate], [e].[FirstName], [e].[LastName], [e].[ManagerUserId], [e].[Role], [e].[StartDate], [e].[Status], [d].[Id], [d].[Budget], [d].[Code], [d].[CreatedAt], [d].[Description], [d].[LeadName], [d].[Name], [o].[Id], [o].[DueDate], [o].[EmployeeId], [o].[Notes], [o].[Priority], [o].[Status], [o].[Title]
+      FROM [Employees] AS [e]
+      INNER JOIN [Departments] AS [d] ON [e].[DepartmentId] = [d].[Id]
+      LEFT JOIN [OnboardingTasks] AS [o] ON [e].[Id] = [o].[EmployeeId]
+      ORDER BY [e].[Id], [d].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (47ms) [Parameters=[@__email_0='?' (Size = 160)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[DepartmentId], [s].[Email], [s].[EndDate], [s].[FirstName], [s].[LastName], [s].[ManagerUserId], [s].[Role], [s].[StartDate], [s].[Status], [s].[Id0], [s].[Budget], [s].[Code], [s].[CreatedAt], [s].[Description], [s].[LeadName], [s].[Name], [o].[Id], [o].[DueDate], [o].[EmployeeId], [o].[Notes], [o].[Priority], [o].[Status], [o].[Title], [c].[Id], [c].[AssignedDate], [c].[Category], [c].[Condition], [c].[EmployeeId], [c].[Name], [c].[ReturnDate], [c].[Status], [c].[Tag], [c].[Value]
+      FROM (
+          SELECT TOP(1) [e].[Id], [e].[DepartmentId], [e].[Email], [e].[EndDate], [e].[FirstName], [e].[LastName], [e].[ManagerUserId], [e].[Role], [e].[StartDate], [e].[Status], [d].[Id] AS [Id0], [d].[Budget], [d].[Code], [d].[CreatedAt], [d].[Description], [d].[LeadName], [d].[Name]
+          FROM [Employees] AS [e]
+          INNER JOIN [Departments] AS [d] ON [e].[DepartmentId] = [d].[Id]
+          WHERE [e].[Email] = @__email_0
+      ) AS [s]
+      LEFT JOIN [OnboardingTasks] AS [o] ON [s].[Id] = [o].[EmployeeId]
+      LEFT JOIN [CompanyAssets] AS [c] ON [s].[Id] = [c].[EmployeeId]
+      ORDER BY [s].[Id], [s].[Id0], [o].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (23ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(@__p_0) [e].[Id], [e].[Email], [e].[FullName], [e].[Role], [e].[Token], [e].[CreatedAt], [e].[ExpiresAt], [e].[AcceptedAt], [e].[EmployeeId]
+      FROM [EmployeeInvites] AS [e]
+      ORDER BY [e].[CreatedAt] DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [o].[Id], [o].[DueDate], [o].[EmployeeId], [o].[Notes], [o].[Priority], [o].[Status], [o].[Title]
+      FROM [OnboardingTasks] AS [o]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [OnboardingTasks] AS [o]
+      WHERE [o].[Status] <> N'Done' AND [o].[DueDate] < CAST(CONVERT(date, GETDATE()) AS date)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__email_0='?' (Size = 160)], CommandType='Text', CommandTimeout='30']
+      SELECT [n].[Id], [n].[Body], [n].[CreatedAt], [n].[EmployeeId], [n].[IsRead], [n].[RecipientEmail], [n].[SentAt], [n].[Status], [n].[Subject]
+      FROM [Notifications] AS [n]
+      WHERE [n].[RecipientEmail] = @__email_0
+      ORDER BY [n].[CreatedAt] DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [a].[Id], [a].[Key], [a].[UpdatedAt], [a].[UpdatedBy], [a].[Value]
+      FROM [AppSettings] AS [a]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [CompanyAssets] AS [c]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [c].[Id], [c].[AssignedDate], [c].[Category], [c].[Condition], [c].[EmployeeId], [c].[Name], [c].[ReturnDate], [c].[Status], [c].[Tag], [c].[Value]
+      FROM [CompanyAssets] AS [c]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(@__p_0) [n].[Id], [n].[Body], [n].[CreatedAt], [n].[EmployeeId], [n].[IsRead], [n].[RecipientEmail], [n].[SentAt], [n].[Status], [n].[Subject]
+      FROM [Notifications] AS [n]
+      ORDER BY [n].[CreatedAt] DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [EmployeeDocuments] AS [e]
+      WHERE [e].[ApprovalStatus] = N'Pending'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COALESCE(SUM([c].[Value]), 0.0)
+      FROM [CompanyAssets] AS [c]

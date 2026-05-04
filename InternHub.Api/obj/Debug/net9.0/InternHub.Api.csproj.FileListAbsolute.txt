@@ -165,3 +165,4 @@ C:\Users\ardit.hoxha\Desktop\CreaPrject\InternHub.Api\obj\Debug\net9.0\InternHub
 C:\Users\ardit.hoxha\Desktop\CreaPrject\InternHub.Api\obj\Debug\net9.0\InternHub.Api.genruntimeconfig.cache
 C:\Users\ardit.hoxha\Desktop\CreaPrject\InternHub.Api\obj\Debug\net9.0\ref\InternHub.Api.dll
 C:\Users\ardit.hoxha\Desktop\CreaPrject\InternHub.Api\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\ardit.hoxha\Desktop\CreaPrject\InternHub.Api\obj\Debug\net9.0\InternHub.Api.sourcelink.json

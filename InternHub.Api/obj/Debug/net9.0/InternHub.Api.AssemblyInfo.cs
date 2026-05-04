@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("InternHub.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b2789a3a2872fb3c68629717258a866ae1e9f070")]
 [assembly: System.Reflection.AssemblyProductAttribute("InternHub.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("InternHub.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

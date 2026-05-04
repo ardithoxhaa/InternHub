@@ -1,21 +1,29 @@
-<main class="login-screen" *ngIf="!user(); else appShell">
-  <section class="login-card">
-    <div class="brand big"><span class="brand-mark">IH</span><div><strong>InternHub</strong><small>Operational onboarding platform</small></div></div>
-    <form *ngIf="!showRegister()" [formGroup]="loginForm" (ngSubmit)="login()">
-      <label>Email<input type="email" formControlName="email"></label>
-      <label>Password<input type="password" formControlName="password"></label>
-      <button type="submit" [disabled]="loginForm.invalid">Sign in</button>
-    </form>
-    <form *ngIf="showRegister()" [formGroup]="registerForm" (ngSubmit)="register()">
-      <label>Full name<input formControlName="fullName"></label>
-      <label>Email<input type="email" formControlName="email"></label>
-      <label>Password<input type="password" formControlName="password"></label>
-      <button type="submit" [disabled]="registerForm.invalid">Create intern account</button>
-    </form>
-    <button class="ghost" type="button" (click)="showRegister.set(!showRegister())">{{ showRegister() ? 'Back to sign in' : 'Register as intern' }}</button>
-    <p class="hint">Demo admin: admin@internhub.test / Admin123!</p>
-    <p class="message" *ngIf="message()">{{ message() }}</p>
+<main class="landing-page" *ngIf="!user(); else appShell">
+  <app-landing-navbar (login)="showLogin()" (register)="showSignup()"></app-landing-navbar>
+  <app-landing-hero (start)="showSignup()"></app-landing-hero>
+  <section class="auth-panel" *ngIf="authPanelOpen()">
+    <div class="auth-card">
+      <button class="drawer-close" type="button" (click)="authPanelOpen.set(false)">Close</button>
+      <div class="brand big"><span class="brand-mark">IH</span><div><strong>{{ showRegister() ? 'Create account' : 'Welcome back' }}</strong><small>{{ showRegister() ? 'Start building today' : 'Sign in to your workspace' }}</small></div></div>
+      <form *ngIf="!showRegister()" [formGroup]="loginForm" (ngSubmit)="login()">
+        <label>Email<input type="email" formControlName="email"></label>
+        <label>Password<input type="password" formControlName="password"></label>
+        <button type="submit" [disabled]="loginForm.invalid">Sign in</button>
+      </form>
+      <form *ngIf="showRegister()" [formGroup]="registerForm" (ngSubmit)="register()">
+        <label>Full name<input formControlName="fullName"></label>
+        <label>Email<input type="email" formControlName="email"></label>
+        <label>Password<input type="password" formControlName="password"></label>
+        <button type="submit" [disabled]="registerForm.invalid">Create account</button>
+      </form>
+      <button class="ghost" type="button" (click)="showRegister.set(!showRegister())">{{ showRegister() ? 'Back to sign in' : 'Register instead' }}</button>
+      <p class="hint">Demo admin: admin@internhub.test / Admin123!</p>
+      <p class="message" *ngIf="message()">{{ message() }}</p>
+    </div>
   </section>
+  <app-feature-section></app-feature-section>
+  <app-how-it-works-section></app-how-it-works-section>
+  <app-landing-footer (start)="showSignup()"></app-landing-footer>
 </main>
 
 <ng-template #appShell>
@@ -36,8 +44,8 @@
     <section class="content">
       <header class="topbar">
         <div>
-          <p class="eyebrow">SQL Server + .NET auth + Angular workflows</p>
-          <h1>Intern onboarding operations</h1>
+          <p class="eyebrow">No-code builder workspace</p>
+          <h1>Website builder command center</h1>
         </div>
         <span class="status" [class.warn]="message()">{{ message() || (loading() ? 'Syncing...' : 'Connected') }}</span>
       </header>
@@ -49,71 +57,6 @@
         <button class="ghost" type="button" *ngFor="let result of searchResults()" (click)="openSearchResult(result)">{{ result.type }} - {{ result.title }} <small>{{ result.subtitle }}</small></button>
       </section>
       <app-empty-state *ngIf="loading()" title="Syncing workspace" detail="Loading the latest people, tasks, reports, and messages from the API."></app-empty-state>
-
-      <section class="ops-command" *ngIf="dashboard() as d">
-        <div class="ops-copy">
-          <span class="workspace-chip">{{ user()?.role }} workspace</span>
-          <h2>Today's onboarding signal</h2>
-          <div class="signal-line">
-            <span>{{ d.openTasks }} open tasks</span>
-            <span>{{ d.overdueTasks }} overdue</span>
-            <span>{{ blockedTasks().length }} blocked</span>
-            <span>{{ criticalOpenTasks().length }} critical</span>
-          </div>
-        </div>
-        <div class="ops-focus">
-          <article>
-            <small>Next due</small>
-            <strong>{{ dueSoonTasks()[0]?.title || 'No open tasks' }}</strong>
-            <span>{{ dueSoonTasks()[0]?.employeeName || 'All clear' }}</span>
-          </article>
-          <article>
-            <small>At risk</small>
-            <strong>{{ atRiskEmployees()[0]?.fullName || 'No one flagged' }}</strong>
-            <span>{{ atRiskEmployees()[0]?.late || 0 }} late tasks</span>
-          </article>
-          <article>
-            <small>Asset watch</small>
-            <strong>{{ assetSummary().needsRepair }}</strong>
-            <span>needs repair</span>
-          </article>
-        </div>
-      </section>
-
-      <section class="action-queue">
-        <div class="panel-title"><h2>Action queue</h2><span>{{ actionQueue().length }} recommended</span></div>
-        <div class="action-grid" *ngIf="actionQueue().length; else noActions">
-          <button type="button" class="action-card" *ngFor="let item of actionQueue()" [class]="item.tone" (click)="openAction(item)">
-            <small>{{ item.type }}</small>
-            <strong>{{ item.title }}</strong>
-            <span>{{ item.detail }}</span>
-            <b>{{ item.action }}</b>
-          </button>
-        </div>
-        <ng-template #noActions>
-          <app-empty-state title="No urgent actions" detail="The workspace has no blocked, overdue, or critical work right now."></app-empty-state>
-        </ng-template>
-      </section>
-
-      <section class="metrics" *ngIf="dashboard() as d">
-        <article><small>Employees</small><strong>{{ d.employees }}</strong></article>
-        <article><small>Open tasks</small><strong>{{ d.openTasks }}</strong></article>
-        <article><small>Overdue</small><strong>{{ d.overdueTasks }}</strong></article>
-        <article><small>Completion</small><strong>{{ d.completionRate }}%</strong></article>
-        <article><small>Assets</small><strong>{{ d.assets }}</strong></article>
-        <article><small>Asset value</small><strong>{{ d.assetValue | currency }}</strong></article>
-      </section>
-
-      <section class="dashboard-grid" *ngIf="dashboard() as d">
-        <div class="panel">
-          <div class="panel-title"><h2>Department load</h2><span>{{ d.employees }} total</span></div>
-          <div class="bars"><div class="bar" *ngFor="let row of d.departmentLoad"><span>{{ row.department }}</span><div><i [style.width.%]="(row.employees / maxDepartmentCount()) * 100"></i></div><b>{{ row.employees }}</b></div></div>
-        </div>
-        <div class="panel">
-          <div class="panel-title"><h2>Upcoming starts</h2><span>{{ d.upcomingStarts.length }} scheduled</span></div>
-          <ul class="task-list"><li *ngFor="let start of d.upcomingStarts"><span>{{ start.employeeName }}</span><small>{{ start.department }} - {{ start.startDate }}</small></li></ul>
-        </div>
-      </section>
 
       <section class="workspace" [ngSwitch]="activeTab()">
         <div class="editor" *ngIf="activeTab() !== 'home' && activeTab() !== 'mywork' && activeTab() !== 'calendar' && activeTab() !== 'templates' && activeTab() !== 'wizard' && activeTab() !== 'invites' && activeTab() !== 'reports' && activeTab() !== 'accounts' && activeTab() !== 'settings' && activeTab() !== 'audit'">
@@ -157,26 +100,55 @@
           </form>
         </div>
 
-        <div class="my-work-grid" *ngSwitchCase="'home'">
-          <section class="panel" *ngIf="roleHome() as home"><div class="panel-title"><h2>{{ home.role }} focus</h2><span>Today</span></div><ul class="task-list"><li *ngFor="let item of home.focusItems"><span>{{ item }}</span></li></ul></section>
-          <section class="panel command-panel"><div class="panel-title"><h2>Command center</h2><span>{{ criticalOpenTasks().length }} need attention</span></div><ul class="task-list priority-list"><li *ngFor="let task of dueSoonTasks()" [class]="taskTone(task)"><span>{{ task.title }}</span><small>{{ task.employeeName }} - {{ dueLabel(task) }} - {{ task.priority }}</small><div class="row-actions"><button (click)="openTaskComments(task)">Notes</button><button (click)="changeTaskStatus(task, 'InProgress')" *ngIf="task.status === 'ToDo'">Start</button><button (click)="changeTaskStatus(task, 'Done')">Done</button></div></li></ul><button *ngIf="canWrite()" (click)="runReminders()">Run overdue reminders</button></section>
-          <section class="journey-map">
-            <div class="panel-title"><h2>Intern journey map</h2><span>Live pipeline</span></div>
-            <div class="journey-rail">
-              <article class="journey-phase" *ngFor="let phase of journeyMap()">
-                <div class="journey-head"><b>{{ phase.title }}</b><small>{{ phase.signal }}</small><strong>{{ phase.employees.length }}</strong></div>
-                <button class="journey-person" type="button" *ngFor="let employee of phase.employees" (click)="openProfile(employee)">
-                  <span>{{ employee.fullName }}</span>
-                  <small>{{ employee.departmentName }} - {{ employee.progress }}% - {{ employee.nextTask?.title || 'No open task' }}</small>
-                  <i [style.width.%]="employee.progress"></i>
-                  <em *ngIf="employee.late">{{ employee.late }} late</em>
-                </button>
-              </article>
+        <div class="builder-dashboard" *ngSwitchCase="'home'">
+          <section class="builder-hero">
+            <div>
+              <span class="workspace-chip">Website builder workspace</span>
+              <h2>Create, manage, and publish no-code websites from one premium dashboard.</h2>
+              <p>Track live websites, drafts, templates, and publishing readiness without leaving the workspace.</p>
+              <div class="builder-actions">
+                <button type="button" (click)="setTab('wizard')">Create New Website</button>
+                <button class="ghost" type="button" (click)="setTab('templates')">Browse Templates</button>
+                <button class="ghost" type="button" (click)="continueEditing()">Continue Editing</button>
+              </div>
+            </div>
+            <div class="builder-live-preview">
+              <b>Live canvas</b>
+              <span></span><span></span><span></span>
             </div>
           </section>
-          <section class="panel"><div class="panel-title"><h2>People at risk</h2><span>Progress</span></div><ul class="task-list"><li *ngFor="let employee of atRiskEmployees()"><span>{{ employee.fullName }}</span><small>{{ employee.departmentName }} - {{ employee.openTaskCount }} open - {{ employee.late }} late</small><div class="progress"><i [style.width.%]="employee.progress"></i></div><button (click)="openProfile(employee)">Open profile</button></li></ul></section>
-          <section class="panel"><div class="panel-title"><h2>Notifications</h2><span>{{ myWork()?.notifications?.length || notifications().length }}</span></div><ul class="task-list"><li *ngFor="let n of (myWork()?.notifications || notifications()).slice(0, 5)"><span>{{ n.subject }}</span><small>{{ n.isRead ? 'Read' : 'Unread' }}</small></li></ul></section>
-          <section class="panel"><div class="panel-title"><h2>Asset health</h2><span>{{ assets().length }} total</span></div><ul class="task-list compact-list"><li><span>Assigned</span><strong>{{ assetSummary().assigned }}</strong></li><li><span>Available</span><strong>{{ assetSummary().available }}</strong></li><li><span>Needs repair</span><strong>{{ assetSummary().needsRepair }}</strong></li><li><span>Returned</span><strong>{{ assetSummary().returned }}</strong></li></ul></section>
+
+          <app-dashboard-stats [stats]="builderStats()"></app-dashboard-stats>
+
+          <section class="dashboard-main">
+            <div class="projects-panel">
+              <div class="panel-title"><h2>Recent projects</h2><span>{{ builderProjects().length }} websites</span></div>
+              <div class="project-grid" *ngIf="builderProjects().length; else noProjects">
+                <app-project-card *ngFor="let project of builderProjects()" [title]="project.title" [detail]="project.detail" [status]="project.status" [statusTone]="project.statusTone" [progress]="project.progress" (open)="openEmployeeById(project.id)"></app-project-card>
+              </div>
+              <ng-template #noProjects>
+                <app-empty-state title="No websites yet" detail="Create your first website workspace with the launch wizard." actionLabel="Create website" (action)="setTab('wizard')"></app-empty-state>
+              </ng-template>
+            </div>
+            <aside class="dashboard-side">
+              <section class="publish-panel">
+                <small>Publishing readiness</small>
+                <strong>{{ dashboard()?.completionRate || 0 }}%</strong>
+                <div class="progress"><i [style.width.%]="dashboard()?.completionRate || 0"></i></div>
+                <span>{{ criticalOpenTasks().length }} critical checks before launch</span>
+              </section>
+              <section class="template-strip">
+                <small>Template library</small>
+                <b>{{ templates()[0]?.name || 'SaaS Launch Kit' }}</b>
+                <b>{{ templates()[1]?.name || 'Portfolio Pro' }}</b>
+                <b>{{ templates()[2]?.name || 'Agency Studio' }}</b>
+              </section>
+              <section class="action-mini">
+                <div class="panel-title"><h2>Quick queue</h2><span>{{ actionQueue().length }}</span></div>
+                <button type="button" *ngFor="let item of actionQueue().slice(0, 4)" (click)="openAction(item)">{{ item.title }} <small>{{ item.action }}</small></button>
+              </section>
+            </aside>
+          </section>
         </div>
 
         <div class="my-work-grid" *ngSwitchCase="'mywork'">
@@ -338,9 +310,8 @@
           <section class="panel"><div class="panel-title"><h2>Audit log</h2><span>{{ audit().length }}</span></div><ul class="task-list"><li *ngFor="let a of audit()"><span>{{ a.action }} {{ a.entityName }}</span><small>{{ a.actor }} - {{ a.details }} - {{ a.createdAt | date:'short' }}</small></li></ul></section>
         </div>
       </section>
-    </section>
 
-    <aside class="drawer" *ngIf="profile() as p">
+      <section class="profile-studio drawer" *ngIf="activeTab() === 'employees' && profile() as p">
       <button class="drawer-close" (click)="closeProfile()">Close</button>
       <h2>{{ p.employee.fullName }}</h2>
       <p>{{ p.employee.role }} - {{ p.employee.departmentName }}</p>
@@ -358,7 +329,8 @@
       <section><h3>Emails</h3><ul><li *ngFor="let n of p.notifications">{{ n.subject }} <span>{{ n.isRead ? 'Read' : 'Unread' }}</span><button *ngIf="!n.isRead" type="button" (click)="markNotificationRead(n.id)">Mark read</button></li></ul></section>
       <section><h3>Timeline</h3><ul><li *ngFor="let item of profileTimeline()">{{ item.action }} {{ item.entityName }} <small>{{ item.actor }} - {{ item.createdAt | date:'short' }}</small></li></ul></section>
       <section *ngIf="selectedTask() as task"><h3>{{ task.title }} notes</h3><form [formGroup]="commentForm" (ngSubmit)="addTaskComment()"><textarea rows="3" formControlName="body"></textarea><button type="submit" [disabled]="commentForm.invalid">Add note</button></form><ul><li *ngFor="let c of comments()">{{ c.body }} <small>{{ c.author }} - {{ c.createdAt | date:'short' }}</small></li></ul></section>
-    </aside>
+      </section>
+    </section>
 
     <aside class="chat-drawer" *ngIf="chatOpen()">
       <div class="chat-head">

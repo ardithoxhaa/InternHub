@@ -5,6 +5,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import * as signalR from '@microsoft/signalr';
 import { forkJoin } from 'rxjs';
 import { InternHubApiService } from './core/internhub-api.service';
+import { DashboardStatsComponent } from './dashboard/dashboard-stats.component';
+import { ProjectCardComponent } from './dashboard/project-card.component';
+import { FeatureSectionComponent } from './landing/feature-section.component';
+import { HowItWorksSectionComponent } from './landing/how-it-works-section.component';
+import { LandingFooterComponent } from './landing/landing-footer.component';
+import { LandingHeroComponent } from './landing/landing-hero.component';
+import { LandingNavbarComponent } from './landing/landing-navbar.component';
 import { SidebarComponent } from './layout/sidebar.component';
 import { EmptyStateComponent } from './shared/empty-state.component';
 
@@ -40,10 +47,11 @@ interface CompanySettings { companyName: string; defaultTemplateId?: number | nu
 interface Analytics { departmentProgress: { department: string; done: number; total: number; rate: number }[]; taskTrend: { date: string; created: number; due: number; completed: number }[]; assetsByCategory: { category: string; count: number; value: number }[]; employeeProgress: { employeeId: number; employeeName: string; department: string; done: number; total: number; rate: number }[]; pendingDocuments: number; }
 interface JourneyPhase { key: string; title: string; signal: string; employees: (Employee & { progress: number; late: number; nextTask?: OnboardingTask })[]; }
 interface ActionQueueItem { type: 'task' | 'employee' | 'asset' | 'document'; tone: WorkTone; title: string; detail: string; action: string; targetId?: number; }
+interface BuilderProject { id: number; title: string; detail: string; status: string; statusTone: string; progress: number; }
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, ReactiveFormsModule, SidebarComponent, EmptyStateComponent],
+  imports: [CommonModule, ReactiveFormsModule, SidebarComponent, EmptyStateComponent, LandingNavbarComponent, LandingHeroComponent, FeatureSectionComponent, HowItWorksSectionComponent, LandingFooterComponent, DashboardStatsComponent, ProjectCardComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   encapsulation: ViewEncapsulation.None
@@ -61,6 +69,7 @@ export class App implements OnInit {
   message = signal('');
   editingId = signal<number | null>(null);
   showRegister = signal(false);
+  authPanelOpen = signal(false);
   user = signal<AuthUser | null>(this.restoreUser());
   profile = signal<EmployeeProfile | null>(null);
   profileTimeline = signal<AuditLog[]>([]);
@@ -235,6 +244,29 @@ export class App implements OnInit {
     .slice(0, 8));
   blockedTasks = computed(() => this.tasks().filter(t => t.status === 'Blocked'));
   criticalOpenTasks = computed(() => this.tasks().filter(t => t.status !== 'Done' && (t.priority === 'Critical' || this.isOverdue(t.dueDate))));
+  builderStats = computed(() => {
+    const published = this.employees().filter(e => e.status === 'Active' || e.status === 'Completed').length;
+    const drafts = Math.max(0, this.employees().length - published);
+    const total = Math.max(this.employees().length, published + drafts);
+    return [
+      { label: 'Total websites', value: total, detail: 'Active website workspaces', tone: 'blue' },
+      { label: 'Published websites', value: published, detail: 'Live or approved projects', tone: 'green' },
+      { label: 'Draft websites', value: drafts, detail: 'Still being customized', tone: 'amber' },
+      { label: 'Templates available', value: Math.max(this.templates().length, 6), detail: 'Reusable site systems', tone: 'violet' }
+    ];
+  });
+  builderProjects = computed<BuilderProject[]>(() => this.employees().slice(0, 6).map(employee => {
+    const progress = this.employeeProgress(employee.id);
+    const published = employee.status === 'Active' || employee.status === 'Completed' || progress >= 85;
+    return {
+      id: employee.id,
+      title: `${employee.departmentName || 'Studio'} website`,
+      detail: `${employee.fullName} - ${employee.role}`,
+      status: published ? 'Published' : progress > 0 ? 'Draft' : 'New',
+      statusTone: published ? 'published' : progress > 0 ? 'draft' : 'new',
+      progress
+    };
+  }));
   actionQueue = computed<ActionQueueItem[]>(() => {
     const taskActions = this.tasks()
       .filter(t => t.status !== 'Done' && (t.status === 'Blocked' || this.isOverdue(t.dueDate) || t.priority === 'Critical'))
@@ -476,7 +508,21 @@ export class App implements OnInit {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
+    this.profile.set(null);
+    this.profileTimeline.set([]);
+    this.selectedTask.set(null);
+    this.comments.set([]);
     this.cancelEdit();
+  }
+
+  showLogin(): void {
+    this.showRegister.set(false);
+    this.authPanelOpen.set(true);
+  }
+
+  showSignup(): void {
+    this.showRegister.set(true);
+    this.authPanelOpen.set(true);
   }
 
   openProfile(employee: Employee): void {
@@ -489,7 +535,11 @@ export class App implements OnInit {
 
   openEmployeeById(employeeId: number): void {
     const employee = this.employees().find(e => e.id === employeeId);
-    if (employee) this.openProfile(employee);
+    if (employee) {
+      this.activeTab.set('employees');
+      this.cancelEdit();
+      this.openProfile(employee);
+    }
   }
 
   openAction(item: ActionQueueItem): void {
@@ -510,6 +560,16 @@ export class App implements OnInit {
     if (item.type === 'asset') {
       this.setTab('assets');
     }
+  }
+
+  continueEditing(): void {
+    const project = this.builderProjects()[0];
+    if (project) {
+      this.openEmployeeById(project.id);
+      return;
+    }
+
+    this.setTab('wizard');
   }
 
   closeProfile(): void {
