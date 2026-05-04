@@ -8,14 +8,20 @@ type Tab = 'home' | 'mywork' | 'employees' | 'departments' | 'tasks' | 'assets' 
   imports: [CommonModule],
   template: `
     <aside class="sidebar">
-      <div class="brand"><span class="brand-mark">IH</span><div><strong>InternHub</strong><small>{{ role }} workspace</small></div></div>
+      <div class="brand"><span class="brand-mark">IH</span><div><strong>InternHub</strong><small>{{ role }} command center</small></div></div>
+      <div class="sidebar-section-title">Workspace</div>
       <nav>
-        <button *ngFor="let item of visibleItems" [class.active]="activeTab === item.tab" (click)="navigate.emit(item.tab)">{{ item.label }}</button>
+        <button *ngFor="let item of visibleItems" [class.active]="activeTab === item.tab" (click)="navigate.emit(item.tab)">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </button>
       </nav>
-      <button class="refresh" (click)="refresh.emit()" [disabled]="loading">Refresh</button>
-      <button class="ghost" (click)="openAi.emit()">AI Assistant</button>
-      <button class="ghost" (click)="openTeam.emit()">Team Chat</button>
-      <button class="ghost logout" (click)="logout.emit()">Sign out</button>
+      <div class="sidebar-actions">
+        <button class="refresh" (click)="refresh.emit()" [disabled]="loading">Refresh data</button>
+        <button class="ghost" (click)="openAi.emit()">AI Assistant</button>
+        <button class="ghost" (click)="openTeam.emit()">Team Chat</button>
+        <button class="ghost logout" (click)="logout.emit()">Sign out</button>
+      </div>
     </aside>
   `
 })
@@ -31,18 +37,18 @@ export class SidebarComponent {
   @Output() openTeam = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
 
-  get visibleItems(): { tab: Tab; label: string }[] {
+  get visibleItems(): { tab: Tab; label: string; icon: string }[] {
     return [
-      { tab: 'home', label: 'Home' },
-      { tab: 'mywork', label: 'My Workspace' },
-      { tab: 'employees', label: 'Interns' },
-      { tab: 'departments', label: 'Departments' },
-      { tab: 'tasks', label: 'Tasks' },
-      { tab: 'assets', label: 'Assets' },
-      { tab: 'calendar', label: 'Calendar' },
-      ...(this.canWrite ? [{ tab: 'wizard' as const, label: 'Launch Intern' }, { tab: 'templates' as const, label: 'Templates' }, { tab: 'reports' as const, label: 'Analytics' }] : []),
-      ...(this.canAdmin ? [{ tab: 'invites' as const, label: 'Invites' }, { tab: 'accounts' as const, label: 'Members' }, { tab: 'settings' as const, label: 'Settings' }] : []),
-      ...(this.canWrite ? [{ tab: 'audit' as const, label: 'Audit' }] : [])
+      { tab: 'home', label: 'Command Center', icon: 'C' },
+      { tab: 'mywork', label: 'My Workspace', icon: 'M' },
+      { tab: 'employees', label: 'Interns', icon: 'I' },
+      { tab: 'departments', label: 'Departments', icon: 'D' },
+      { tab: 'tasks', label: 'Tasks', icon: 'T' },
+      { tab: 'assets', label: 'Assets', icon: 'A' },
+      { tab: 'calendar', label: 'Calendar', icon: 'K' },
+      ...(this.canWrite ? [{ tab: 'wizard' as const, label: 'Launch Intern', icon: 'L' }, { tab: 'templates' as const, label: 'Templates', icon: 'P' }, { tab: 'reports' as const, label: 'Analytics', icon: 'R' }] : []),
+      ...(this.canAdmin ? [{ tab: 'invites' as const, label: 'Invites', icon: 'V' }, { tab: 'accounts' as const, label: 'Members', icon: 'U' }, { tab: 'settings' as const, label: 'Settings', icon: 'S' }] : []),
+      ...(this.canWrite ? [{ tab: 'audit' as const, label: 'Audit', icon: 'H' }] : [])
     ];
   }
 }

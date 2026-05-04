@@ -43,11 +43,16 @@
 
     <section class="content">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">Intern onboarding workspace</p>
-          <h1>InternHub command center</h1>
+        <div class="topbar-title">
+          <p class="eyebrow">Intern operations</p>
+          <h1>{{ tabTitle() }}</h1>
         </div>
-        <span class="status" [class.warn]="message()">{{ message() || (loading() ? 'Syncing...' : 'Connected') }}</span>
+        <div class="topbar-actions">
+          <span class="status" [class.warn]="message()">{{ message() || (loading() ? 'Syncing...' : 'Live workspace') }}</span>
+          <button class="ghost" type="button" (click)="chatOpen.set(true)">AI</button>
+          <button class="ghost" type="button" (click)="teamChatOpen.set(true)">Chat</button>
+          <div class="user-chip"><span>{{ (user()?.fullName || 'IH').slice(0, 2) }}</span><div><b>{{ user()?.fullName }}</b><small>{{ user()?.role }}</small></div></div>
+        </div>
       </header>
       <form class="global-search" [formGroup]="searchForm" (ngSubmit)="globalSearch()">
         <input formControlName="q" placeholder="Search employees, tasks, assets">
@@ -101,51 +106,84 @@
         </div>
 
         <div class="onboarding-dashboard" *ngSwitchCase="'home'">
-          <section class="onboarding-hero">
-            <div>
-              <span class="workspace-chip">Intern onboarding workspace</span>
-              <h2>Launch, support, and track every intern from one calm operations dashboard.</h2>
-              <p>Manage intern profiles, onboarding tasks, documents, assets, templates, invites, and readiness without leaving the workspace.</p>
+          <section class="command-hero">
+            <div class="command-copy">
+              <span class="workspace-chip">People operations hub</span>
+              <h2>Run every intern journey from a polished command center.</h2>
+              <p>Launch interns, track onboarding health, resolve blockers, review assets, and keep HR operations moving with a focused executive-style workspace.</p>
               <div class="hero-actions">
-                <button type="button" (click)="setTab('wizard')">Launch New Intern</button>
-                <button class="ghost" type="button" (click)="setTab('templates')">Browse Onboarding Templates</button>
-                <button class="ghost" type="button" (click)="continueEditing()">Continue Onboarding</button>
+                <button type="button" (click)="setTab('wizard')">Launch intern</button>
+                <button class="ghost" type="button" (click)="setTab('tasks')">Review tasks</button>
+                <button class="ghost" type="button" (click)="setTab('reports')">Open analytics</button>
               </div>
             </div>
-            <div class="onboarding-preview">
-              <b>Onboarding snapshot</b>
-              <span></span><span></span><span></span>
+            <div class="command-card">
+              <small>Readiness score</small>
+              <strong>{{ dashboard()?.completionRate || 0 }}%</strong>
+              <div class="progress xl"><i [style.width.%]="dashboard()?.completionRate || 0"></i></div>
+              <div class="signal-grid">
+                <span><b>{{ criticalOpenTasks().length }}</b><small>critical</small></span>
+                <span><b>{{ blockedTasks().length }}</b><small>blocked</small></span>
+                <span><b>{{ dueSoonTasks().length }}</b><small>due soon</small></span>
+              </div>
             </div>
           </section>
 
           <app-dashboard-stats [stats]="onboardingStats()"></app-dashboard-stats>
 
-          <section class="dashboard-main">
-            <div class="interns-panel">
-              <div class="panel-title"><h2>Recent interns</h2><span>{{ recentInternCards().length }} profiles</span></div>
-              <div class="intern-grid" *ngIf="recentInternCards().length; else noInterns">
-                <app-intern-card *ngFor="let intern of recentInternCards()" [title]="intern.title" [detail]="intern.detail" [status]="intern.status" [statusTone]="intern.statusTone" [progress]="intern.progress" (open)="openEmployeeById(intern.id)"></app-intern-card>
-              </div>
-              <ng-template #noInterns>
-                <app-empty-state title="No interns yet" detail="Create your first intern profile with the launch wizard." actionLabel="Launch intern" (action)="setTab('wizard')"></app-empty-state>
-              </ng-template>
+          <section class="dashboard-layout">
+            <div class="dashboard-column main-column">
+              <section class="panel journey-panel">
+                <div class="panel-title"><h2>Onboarding journey</h2><span>{{ employees().length }} interns</span></div>
+                <div class="journey-lanes">
+                  <article *ngFor="let phase of journeyMap()">
+                    <div class="lane-head"><b>{{ phase.title }}</b><small>{{ phase.signal }}</small></div>
+                    <button type="button" *ngFor="let intern of phase.employees" (click)="openEmployeeById(intern.id)">
+                      <span>{{ intern.fullName }}</span>
+                      <small>{{ intern.departmentName }} · {{ intern.progress }}%</small>
+                      <i [style.width.%]="intern.progress"></i>
+                    </button>
+                  </article>
+                </div>
+              </section>
+
+              <section class="interns-panel">
+                <div class="panel-title"><h2>Priority profiles</h2><span>{{ recentInternCards().length }} profiles</span></div>
+                <div class="intern-grid" *ngIf="recentInternCards().length; else noInterns">
+                  <app-intern-card *ngFor="let intern of recentInternCards()" [title]="intern.title" [detail]="intern.detail" [status]="intern.status" [statusTone]="intern.statusTone" [progress]="intern.progress" (open)="openEmployeeById(intern.id)"></app-intern-card>
+                </div>
+                <ng-template #noInterns>
+                  <app-empty-state title="No interns yet" detail="Create your first intern profile with the launch wizard." actionLabel="Launch intern" (action)="setTab('wizard')"></app-empty-state>
+                </ng-template>
+              </section>
             </div>
-            <aside class="dashboard-side">
-              <section class="publish-panel">
-                <small>Publishing readiness</small>
-                <strong>{{ dashboard()?.completionRate || 0 }}%</strong>
-                <div class="progress"><i [style.width.%]="dashboard()?.completionRate || 0"></i></div>
-                <span>{{ criticalOpenTasks().length }} critical checks before launch</span>
+
+            <aside class="dashboard-column side-column">
+              <section class="panel action-panel">
+                <div class="panel-title"><h2>Operations queue</h2><span>{{ actionQueue().length }}</span></div>
+                <button type="button" *ngFor="let item of actionQueue().slice(0, 6)" [class]="item.tone" (click)="openAction(item)">
+                  <span>{{ item.title }}</span>
+                  <small>{{ item.detail }}</small>
+                  <b>{{ item.action }}</b>
+                </button>
               </section>
-              <section class="template-strip">
-                <small>Template library</small>
-                <b>{{ templates()[0]?.name || 'SaaS Launch Kit' }}</b>
-                <b>{{ templates()[1]?.name || 'Portfolio Pro' }}</b>
-                <b>{{ templates()[2]?.name || 'Agency Studio' }}</b>
+
+              <section class="panel asset-panel">
+                <div class="panel-title"><h2>Asset health</h2><span>{{ assets().length }} total</span></div>
+                <div class="asset-metrics">
+                  <span><b>{{ assetSummary().assigned }}</b><small>Assigned</small></span>
+                  <span><b>{{ assetSummary().available }}</b><small>Available</small></span>
+                  <span><b>{{ assetSummary().needsRepair }}</b><small>Repair</small></span>
+                  <span><b>{{ assetSummary().returned }}</b><small>Returned</small></span>
+                </div>
               </section>
-              <section class="action-mini">
-                <div class="panel-title"><h2>Quick queue</h2><span>{{ actionQueue().length }}</span></div>
-                <button type="button" *ngFor="let item of actionQueue().slice(0, 4)" (click)="openAction(item)">{{ item.title }} <small>{{ item.action }}</small></button>
+
+              <section class="panel shortcut-panel">
+                <div class="panel-title"><h2>Shortcuts</h2><span>Tools</span></div>
+                <button type="button" (click)="setTab('templates')">Manage templates</button>
+                <button type="button" (click)="setTab('calendar')">Open calendar</button>
+                <button type="button" (click)="setTab('invites')" *ngIf="canAdmin()">Invite member</button>
+                <button type="button" (click)="runReminders()" *ngIf="canWrite()">Run reminders</button>
               </section>
             </aside>
           </section>

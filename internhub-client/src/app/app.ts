@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import * as signalR from '@microsoft/signalr';
@@ -116,6 +116,22 @@ export class App implements OnInit {
   readonly assetConditions: AssetCondition[] = ['New', 'Good', 'NeedsRepair', 'Retired'];
   readonly assetStatuses: AssetStatus[] = ['Available', 'Assigned', 'Returned', 'Retired', 'Lost'];
   readonly accountRoles = ['Intern', 'Manager', 'HR', 'Admin'];
+  readonly tabTitles: Record<Tab, string> = {
+    home: 'Command center',
+    mywork: 'My workspace',
+    employees: 'Interns',
+    departments: 'Departments',
+    tasks: 'Tasks',
+    assets: 'Assets',
+    calendar: 'Calendar',
+    templates: 'Templates',
+    wizard: 'Launch intern',
+    invites: 'Invites',
+    reports: 'Analytics',
+    accounts: 'Members',
+    settings: 'Settings',
+    audit: 'Audit'
+  };
 
   loginForm = this.fb.nonNullable.group({
     email: ['admin@internhub.test', [Validators.required, Validators.email]],
@@ -369,6 +385,7 @@ export class App implements OnInit {
   });
   canWrite = computed(() => ['Admin', 'HR', 'Manager'].includes(this.user()?.role ?? ''));
   canAdmin = computed(() => ['Admin', 'HR'].includes(this.user()?.role ?? ''));
+  tabTitle = computed(() => this.tabTitles[this.activeTab()]);
   profileHealth = computed(() => {
     const profile = this.profile();
     if (!profile) return null;
@@ -398,7 +415,7 @@ export class App implements OnInit {
         this.loadAll();
         this.startTeamChat();
       },
-      error: err => this.message.set(err.error || 'Login failed.')
+      error: err => this.message.set(this.describeError(err, 'Login failed.'))
     });
   }
 
@@ -416,7 +433,7 @@ export class App implements OnInit {
         this.registerForm.reset({ fullName: '', email: '', password: '', role: 'Intern' });
         this.showRegister.set(false);
       },
-      error: err => this.message.set(err.error || 'Registration failed.')
+      error: err => this.message.set(this.describeError(err, 'Registration failed.'))
     });
   }
 
@@ -430,35 +447,39 @@ export class App implements OnInit {
   loadAll(): void {
     this.loading.set(true);
     this.message.set('');
-    this.http.get<Dashboard>(`${this.api}/dashboard`, this.auth()).subscribe(d => this.dashboard.set(d));
-    this.http.get<Department[]>(`${this.api}/departments`, this.auth()).subscribe(d => this.departments.set(d));
-    this.http.get<Employee[]>(`${this.api}/employees`, this.auth()).subscribe(e => this.employees.set(e));
-    this.http.get<OnboardingTask[]>(`${this.api}/onboardingtasks`, this.auth()).subscribe(t => this.tasks.set(t));
-    this.http.get<CompanyAsset[]>(`${this.api}/companyassets`, this.auth()).subscribe(a => this.assets.set(a));
-    this.http.get<CalendarItem[]>(`${this.api}/calendar`, this.auth()).subscribe(c => this.calendar.set(c));
-    this.http.get<MyWork>(`${this.api}/my-work`, this.auth()).subscribe(w => this.myWork.set(w));
-    this.http.get<RoleHome>(`${this.api}/product/home`, this.auth()).subscribe(h => this.roleHome.set(h));
-    this.http.get<TeamChatMessage[]>(`${this.api}/product/chat/history`, this.auth()).subscribe(m => this.teamMessages.set(m));
-    if (this.canWrite()) {
-      this.http.get<NotificationItem[]>(`${this.api}/notifications`, this.auth()).subscribe(n => this.notifications.set(n));
-      this.http.get<AuditLog[]>(`${this.api}/audit`, this.auth()).subscribe(a => this.audit.set(a));
-      this.http.get<OnboardingTemplate[]>(`${this.api}/onboarding-templates`, this.auth()).subscribe(t => this.templates.set(t));
-      this.http.get<Analytics>(`${this.api}/product/analytics`, this.auth()).subscribe(a => this.analytics.set(a));
-      this.http.get<SettingsStatus>(`${this.api}/product/settings-status`, this.auth()).subscribe(s => this.settings.set(s));
-      if (this.canAdmin()) {
-        this.http.get<Invite[]>(`${this.api}/product/invites`, this.auth()).subscribe(i => this.invites.set(i));
-        this.http.get<CompanySettings>(`${this.api}/product/settings`, this.auth()).subscribe(s => {
-          this.companySettings.set(s);
-          this.settingsForm.patchValue({
-            companyName: s.companyName,
-            defaultTemplateId: s.defaultTemplateId ?? 0,
-            reminderFrequencyDays: s.reminderFrequencyDays,
-            emailSenderName: s.emailSenderName
-          });
-        });
+    forkJoin({
+      dashboard: this.http.get<Dashboard>(`${this.api}/dashboard`, this.auth()),
+      departments: this.http.get<Department[]>(`${this.api}/departments`, this.auth()),
+      employees: this.http.get<Employee[]>(`${this.api}/employees`, this.auth()),
+      tasks: this.http.get<OnboardingTask[]>(`${this.api}/onboardingtasks`, this.auth()),
+      assets: this.http.get<CompanyAsset[]>(`${this.api}/companyassets`, this.auth()),
+      calendar: this.http.get<CalendarItem[]>(`${this.api}/calendar`, this.auth()),
+      myWork: this.http.get<MyWork>(`${this.api}/my-work`, this.auth()),
+      roleHome: this.http.get<RoleHome>(`${this.api}/product/home`, this.auth()),
+      teamMessages: this.http.get<TeamChatMessage[]>(`${this.api}/product/chat/history`, this.auth())
+    }).subscribe({
+      next: data => {
+        this.dashboard.set(data.dashboard);
+        this.departments.set(data.departments);
+        this.employees.set(data.employees);
+        this.tasks.set(data.tasks);
+        this.assets.set(data.assets);
+        this.calendar.set(data.calendar);
+        this.myWork.set(data.myWork);
+        this.roleHome.set(data.roleHome);
+        this.teamMessages.set(data.teamMessages);
+
+        if (this.canWrite()) {
+          this.loadPrivilegedData();
+        } else {
+          this.loading.set(false);
+        }
+      },
+      error: err => {
+        this.loading.set(false);
+        this.message.set(this.describeError(err, 'Could not load workspace data.'));
       }
-    }
-    this.loading.set(false);
+    });
   }
 
   globalSearch(): void {
@@ -502,7 +523,7 @@ export class App implements OnInit {
         this.message.set(`${result.reminders} reminders queued or sent.`);
         this.loadAll();
       },
-      error: err => this.message.set(err.error || 'Reminder run failed.')
+      error: err => this.message.set(this.describeError(err, 'Reminder run failed.'))
     });
   }
 
@@ -983,12 +1004,16 @@ export class App implements OnInit {
   }
 
   delete(resource: string, id: number): void {
+    if (!confirm('Delete this record? This action cannot be undone.')) {
+      return;
+    }
+
     this.http.delete(`${this.api}/${resource}/${id}`, this.auth()).subscribe({
       next: () => {
         this.message.set('Record deleted.');
         this.loadAll();
       },
-      error: err => this.message.set(err.error || 'Delete failed.')
+      error: err => this.message.set(this.describeError(err, 'Delete failed.'))
     });
   }
 
@@ -1012,7 +1037,58 @@ export class App implements OnInit {
         this.cancelEdit();
         this.loadAll();
       },
-      error: err => this.message.set(err.error || 'Save failed. Check required fields, permissions, and unique values.')
+      error: err => this.message.set(this.describeError(err, 'Save failed. Check required fields, permissions, and unique values.'))
+    });
+  }
+
+  private loadPrivilegedData(): void {
+    forkJoin({
+      notifications: this.http.get<NotificationItem[]>(`${this.api}/notifications`, this.auth()),
+      audit: this.http.get<AuditLog[]>(`${this.api}/audit`, this.auth()),
+      templates: this.http.get<OnboardingTemplate[]>(`${this.api}/onboarding-templates`, this.auth()),
+      analytics: this.http.get<Analytics>(`${this.api}/product/analytics`, this.auth()),
+      settings: this.http.get<SettingsStatus>(`${this.api}/product/settings-status`, this.auth())
+    }).subscribe({
+      next: data => {
+        this.notifications.set(data.notifications);
+        this.audit.set(data.audit);
+        this.templates.set(data.templates);
+        this.analytics.set(data.analytics);
+        this.settings.set(data.settings);
+
+        if (this.canAdmin()) {
+          this.loadAdminData();
+        } else {
+          this.loading.set(false);
+        }
+      },
+      error: err => {
+        this.loading.set(false);
+        this.message.set(this.describeError(err, 'Could not load management data.'));
+      }
+    });
+  }
+
+  private loadAdminData(): void {
+    forkJoin({
+      invites: this.http.get<Invite[]>(`${this.api}/product/invites`, this.auth()),
+      companySettings: this.http.get<CompanySettings>(`${this.api}/product/settings`, this.auth())
+    }).subscribe({
+      next: data => {
+        this.invites.set(data.invites);
+        this.companySettings.set(data.companySettings);
+        this.settingsForm.patchValue({
+          companyName: data.companySettings.companyName,
+          defaultTemplateId: data.companySettings.defaultTemplateId ?? 0,
+          reminderFrequencyDays: data.companySettings.reminderFrequencyDays,
+          emailSenderName: data.companySettings.emailSenderName
+        });
+        this.loading.set(false);
+      },
+      error: err => {
+        this.loading.set(false);
+        this.message.set(this.describeError(err, 'Could not load admin data.'));
+      }
     });
   }
 
@@ -1022,7 +1098,32 @@ export class App implements OnInit {
 
   private restoreUser(): AuthUser | null {
     const raw = localStorage.getItem('internhub-user');
-    return raw ? JSON.parse(raw) as AuthUser : null;
+    if (!raw) return null;
+
+    try {
+      return JSON.parse(raw) as AuthUser;
+    } catch {
+      localStorage.removeItem('internhub-user');
+      return null;
+    }
+  }
+
+  private describeError(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      if (typeof error.error === 'string' && error.error.trim()) {
+        return error.error;
+      }
+
+      if (error.error?.message) {
+        return error.error.message;
+      }
+
+      if (error.status === 0) {
+        return 'Cannot reach the API. Make sure the backend is running.';
+      }
+    }
+
+    return fallback;
   }
 
   private today(): string {
