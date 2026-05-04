@@ -4,8 +4,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
   selector: 'app-landing-footer',
   template: `
     <footer class="landing-footer" id="pricing">
-      <div><b>CreaStudio</b><p>A modern workspace for building, previewing, and launching professional web experiences.</p></div>
-      <button type="button" (click)="start.emit()">Start Building</button>
+      <div><b>InternHub</b><p>A modern workspace for launching interns, tracking onboarding, and keeping operations organized.</p></div>
+      <button type="button" (click)="start.emit()">Launch Intern</button>
     </footer>
   `
 })

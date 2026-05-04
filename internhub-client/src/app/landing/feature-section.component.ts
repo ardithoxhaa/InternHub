@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
     <section class="landing-section" id="features">
       <div class="section-heading">
         <span>Features</span>
-        <h2>Everything you need to take a website from draft to launch.</h2>
+        <h2>Everything you need to take an intern from invite to completion.</h2>
       </div>
       <div class="feature-grid">
         <article *ngFor="let feature of features">
@@ -22,11 +22,11 @@ import { CommonModule } from '@angular/common';
 })
 export class FeatureSectionComponent {
   features = [
-    { badge: 'Builder', title: 'Drag-and-drop builder', detail: 'Arrange sections, content, and page blocks without touching code.' },
-    { badge: 'Design', title: 'Professional templates', detail: 'Start from polished layouts built for SaaS, portfolios, services, and campaigns.' },
-    { badge: 'Responsive', title: 'Responsive editing', detail: 'Tune desktop and mobile layouts from the same workspace.' },
-    { badge: 'Growth', title: 'SEO settings', detail: 'Manage metadata, page titles, descriptions, and launch readiness.' },
-    { badge: 'Launch', title: 'Preview and publish', detail: 'Review work before publishing and keep launch checks visible.' },
-    { badge: 'History', title: 'Version history', detail: 'Track changes and keep a clear timeline of project progress.' }
+    { badge: 'People', title: 'Intern profiles', detail: 'Keep roles, departments, dates, status, documents, and ownership in one place.' },
+    { badge: 'Plans', title: 'Onboarding templates', detail: 'Start from reusable task plans tailored to each department or program.' },
+    { badge: 'Tasks', title: 'Progress tracking', detail: 'Track due dates, priorities, blockers, notes, and completion across every intern.' },
+    { badge: 'Assets', title: 'Equipment assignment', detail: 'Manage laptops, badges, and other company assets from assignment to return.' },
+    { badge: 'Invites', title: 'Account invitations', detail: 'Create employee invites and keep access, notifications, and onboarding flow visible.' },
+    { badge: 'Audit', title: 'Operations history', detail: 'Review notifications, updates, and audit records for a clearer timeline.' }
   ];
 }

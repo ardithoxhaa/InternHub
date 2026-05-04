@@ -4,7 +4,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
   selector: 'app-landing-navbar',
   template: `
     <header class="landing-nav">
-      <a class="landing-brand" href="#home" aria-label="CreaStudio home"><span>CS</span><b>CreaStudio</b></a>
+      <a class="landing-brand" href="#home" aria-label="InternHub home"><span>IH</span><b>InternHub</b></a>
       <nav>
         <a href="#home">Home</a>
         <a href="#features">Features</a>

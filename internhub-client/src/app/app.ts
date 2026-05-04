@@ -249,10 +249,10 @@ export class App implements OnInit {
     const drafts = Math.max(0, this.employees().length - published);
     const total = Math.max(this.employees().length, published + drafts);
     return [
-      { label: 'Total websites', value: total, detail: 'Active website workspaces', tone: 'blue' },
-      { label: 'Published websites', value: published, detail: 'Live or approved projects', tone: 'green' },
-      { label: 'Draft websites', value: drafts, detail: 'Still being customized', tone: 'amber' },
-      { label: 'Templates available', value: Math.max(this.templates().length, 6), detail: 'Reusable site systems', tone: 'violet' }
+      { label: 'Total interns', value: total, detail: 'Profiles in onboarding', tone: 'blue' },
+      { label: 'Active interns', value: published, detail: 'Active or completed profiles', tone: 'green' },
+      { label: 'New interns', value: drafts, detail: 'Awaiting more progress', tone: 'amber' },
+      { label: 'Templates available', value: Math.max(this.templates().length, 6), detail: 'Reusable onboarding plans', tone: 'violet' }
     ];
   });
   builderProjects = computed<BuilderProject[]>(() => this.employees().slice(0, 6).map(employee => {
@@ -260,9 +260,9 @@ export class App implements OnInit {
     const published = employee.status === 'Active' || employee.status === 'Completed' || progress >= 85;
     return {
       id: employee.id,
-      title: `${employee.departmentName || 'Studio'} website`,
+      title: employee.fullName,
       detail: `${employee.fullName} - ${employee.role}`,
-      status: published ? 'Published' : progress > 0 ? 'Draft' : 'New',
+      status: published ? 'On track' : progress > 0 ? 'In progress' : 'New',
       statusTone: published ? 'published' : progress > 0 ? 'draft' : 'new',
       progress
     };

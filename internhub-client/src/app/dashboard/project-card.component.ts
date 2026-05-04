@@ -12,7 +12,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
         <h3>{{ title }}</h3>
         <p>{{ detail }}</p>
         <div class="project-progress"><i [style.width.%]="progress"></i></div>
-        <button type="button" (click)="open.emit()">Open project</button>
+        <button type="button" (click)="open.emit()">Open profile</button>
       </div>
     </article>
   `

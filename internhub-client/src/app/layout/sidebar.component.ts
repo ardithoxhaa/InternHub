@@ -8,7 +8,7 @@ type Tab = 'home' | 'mywork' | 'employees' | 'departments' | 'tasks' | 'assets' 
   imports: [CommonModule],
   template: `
     <aside class="sidebar">
-      <div class="brand"><span class="brand-mark">CS</span><div><strong>CreaStudio</strong><small>{{ role }} workspace</small></div></div>
+      <div class="brand"><span class="brand-mark">IH</span><div><strong>InternHub</strong><small>{{ role }} workspace</small></div></div>
       <nav>
         <button *ngFor="let item of visibleItems" [class.active]="activeTab === item.tab" (click)="navigate.emit(item.tab)">{{ item.label }}</button>
       </nav>
@@ -35,12 +35,12 @@ export class SidebarComponent {
     return [
       { tab: 'home', label: 'Home' },
       { tab: 'mywork', label: 'My Workspace' },
-      { tab: 'employees', label: 'Websites' },
-      { tab: 'departments', label: 'Collections' },
+      { tab: 'employees', label: 'Interns' },
+      { tab: 'departments', label: 'Departments' },
       { tab: 'tasks', label: 'Tasks' },
       { tab: 'assets', label: 'Assets' },
       { tab: 'calendar', label: 'Calendar' },
-      ...(this.canWrite ? [{ tab: 'wizard' as const, label: 'New Website' }, { tab: 'templates' as const, label: 'Templates' }, { tab: 'reports' as const, label: 'Analytics' }] : []),
+      ...(this.canWrite ? [{ tab: 'wizard' as const, label: 'Launch Intern' }, { tab: 'templates' as const, label: 'Templates' }, { tab: 'reports' as const, label: 'Analytics' }] : []),
       ...(this.canAdmin ? [{ tab: 'invites' as const, label: 'Invites' }, { tab: 'accounts' as const, label: 'Members' }, { tab: 'settings' as const, label: 'Settings' }] : []),
       ...(this.canWrite ? [{ tab: 'audit' as const, label: 'Audit' }] : [])
     ];

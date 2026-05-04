@@ -44,8 +44,8 @@
     <section class="content">
       <header class="topbar">
         <div>
-          <p class="eyebrow">No-code builder workspace</p>
-          <h1>Website builder command center</h1>
+          <p class="eyebrow">Intern onboarding workspace</p>
+          <h1>InternHub command center</h1>
         </div>
         <span class="status" [class.warn]="message()">{{ message() || (loading() ? 'Syncing...' : 'Connected') }}</span>
       </header>
@@ -103,17 +103,17 @@
         <div class="builder-dashboard" *ngSwitchCase="'home'">
           <section class="builder-hero">
             <div>
-              <span class="workspace-chip">Website builder workspace</span>
-              <h2>Create, manage, and publish no-code websites from one premium dashboard.</h2>
-              <p>Track live websites, drafts, templates, and publishing readiness without leaving the workspace.</p>
+              <span class="workspace-chip">Intern onboarding workspace</span>
+              <h2>Launch, support, and track every intern from one calm operations dashboard.</h2>
+              <p>Manage intern profiles, onboarding tasks, documents, assets, templates, invites, and readiness without leaving the workspace.</p>
               <div class="builder-actions">
-                <button type="button" (click)="setTab('wizard')">Create New Website</button>
-                <button class="ghost" type="button" (click)="setTab('templates')">Browse Templates</button>
-                <button class="ghost" type="button" (click)="continueEditing()">Continue Editing</button>
+                <button type="button" (click)="setTab('wizard')">Launch New Intern</button>
+                <button class="ghost" type="button" (click)="setTab('templates')">Browse Onboarding Templates</button>
+                <button class="ghost" type="button" (click)="continueEditing()">Continue Onboarding</button>
               </div>
             </div>
             <div class="builder-live-preview">
-              <b>Live canvas</b>
+              <b>Onboarding snapshot</b>
               <span></span><span></span><span></span>
             </div>
           </section>
@@ -122,12 +122,12 @@
 
           <section class="dashboard-main">
             <div class="projects-panel">
-              <div class="panel-title"><h2>Recent projects</h2><span>{{ builderProjects().length }} websites</span></div>
+              <div class="panel-title"><h2>Recent interns</h2><span>{{ builderProjects().length }} profiles</span></div>
               <div class="project-grid" *ngIf="builderProjects().length; else noProjects">
                 <app-project-card *ngFor="let project of builderProjects()" [title]="project.title" [detail]="project.detail" [status]="project.status" [statusTone]="project.statusTone" [progress]="project.progress" (open)="openEmployeeById(project.id)"></app-project-card>
               </div>
               <ng-template #noProjects>
-                <app-empty-state title="No websites yet" detail="Create your first website workspace with the launch wizard." actionLabel="Create website" (action)="setTab('wizard')"></app-empty-state>
+                <app-empty-state title="No interns yet" detail="Create your first intern profile with the launch wizard." actionLabel="Launch intern" (action)="setTab('wizard')"></app-empty-state>
               </ng-template>
             </div>
             <aside class="dashboard-side">
