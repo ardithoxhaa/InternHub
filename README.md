@@ -126,7 +126,10 @@ Frontend:
 cd internhub-client
 npm run build
 ```
+<<<<<<< HEAD
 
 ## Notes For GitHub
 
 Do not commit generated folders such as `bin`, `obj`, `node_modules`, `.angular`, or `dist`. The root `.gitignore` excludes those along with local logs and environment files.
+=======
+>>>>>>> 87f2452dcb89cccc8133a6ebc90eef112f54e2ef
